@@ -1,11 +1,10 @@
-var joinURIs = require("./joinuris");
-
 var excludedDeps = {
 	steal: true,
 	systemjs: true,
 	"system-bower": true
 };
 
+// Combines together dependencies and devDependencies (if bowerDev option is enabled)
 var getDeps = function(loader, bower){
 	var deps = {};
 	var addDeps = function(dependencies){
@@ -22,13 +21,28 @@ var getDeps = function(loader, bower){
 	return deps;
 };
 
-var denormalize = function(name){
-	var len = name.length;
-	if(name.substr(len - 3) === ".js") {
-		return name.substr(0, len - 3);
+// Get the directory where the main is located, including the bowerPath
+var getMainDir = function(bowerPath, name, main){
+	var parts = main.split('/');
+	parts.pop();
+
+	// Remove . if it starts with that
+	if(parts[0] === '.') {
+		parts.shift();
 	}
-	return name;
-}
+	parts.unshift.apply(parts, [bowerPath, name]);
+	return parts.join('/');
+};
+
+// Set paths for this dependency
+var setPaths = function(config, bowerPath, name, main) {
+	var mainDir = bowerPath + "/" + name + "/";
+	if(!config.paths[name] && main) {
+		var mainDir = getMainDir(bowerPath, name, main);
+	}
+	config.paths[name] = [bowerPath, name, main].join('/');
+	config.paths[name + "/*"] = mainDir + "/*.js";
+};
 
 exports.translate = function(load){
 	var loader = this;
@@ -53,18 +67,9 @@ exports.translate = function(load){
 	config.map = config.map || {};
 	config.paths = config.paths || {};
 
-	var mainDir = bowerPath + "/" + name + "/";
 	var main = bower.main && ((typeof bower.main === "string")
 															? bower.main : bower.main[0]);
-	if(!config.paths[name] && main) {
-		mainDir = bowerPath + "/" + name + "/" + joinURIs(main, ".");
-	}
-	config.paths[name + "/*"] = mainDir + "*.js";
-	if(!config.map[name] && main) {
-		var mainFile = main.split('/');
-		mainFile = mainFile[mainFile.length - 1];
-		config.map[name] = name + "/" + denormalize(mainFile);
-	}
+  setPaths(config, bowerPath, name, main);
 
 	return "define(" + JSON.stringify(amdDeps) + ", function(loader){\n" +
 		"loader.config(" +JSON.stringify(config, null, " ") + ");" + "\n});";
