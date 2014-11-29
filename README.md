@@ -43,6 +43,44 @@ System.import("bower.json!bower").then(function() {
 });
 ```
 
+## Configuring
+
+This plugin allows for a couple of options to optimize customization:
+
+### System.bowerPath
+
+By default the plugin will assume dependencies are located at `bower_components`. Since a
+lot of people like to place their dependencies in another folder name you can change the
+lookup path with `System.bowerPath`.
+
+```js
+System.bowerPath = "vendor";
+```
+
+With StealJS you can add this to your script tag:
+
+```html
+<script src="bower_components/steal/steal.js"
+  data-bower-path="vendor"></script>
+```
+
+### System.bowerDev
+
+Using `System.bowerDev` will enable loading of `devDependencies`. This is useful when testing.
+It will only load your root devDependencies, not those of your dependencies. To enable
+just make the value truthy:
+
+```js
+System.bowerDev = true;
+```
+
+or with StealJS
+
+```html
+<script src="bower_components/steal/steal.js"
+  data-bower-dev="true"></script>
+```
+
 ## License
 
 MIT
