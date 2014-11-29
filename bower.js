@@ -1,9 +1,17 @@
+"format cjs";
+
+// Add @loader, for SystemJS
+if(!System.has("@loader")) {
+	System.set('@loader', System.newModule({'default':System, __useDefault: true}));
+}
+
 var excludedDeps = {
 	steal: true,
 	systemjs: true,
 	"system-bower": true
 };
 
+var inited = false;
 // Combines together dependencies and devDependencies (if bowerDev option is enabled)
 var getDeps = function(loader, bower){
 	var deps = {};
@@ -15,9 +23,12 @@ var getDeps = function(loader, bower){
 		}
 	};
 	addDeps(bower.dependencies || {});
-	if(loader.bowerDev) {
+	// Only get the devDependencies if this is the root bower and the 
+	// `bowerDev` option is enabled
+	if(loader.bowerDev && !inited) {
 		addDeps(bower.devDependencies || {});
 	}
+	inited = true;
 	return deps;
 };
 
@@ -47,7 +58,6 @@ var setPaths = function(config, bowerPath, name, main) {
 exports.translate = function(load){
 	var loader = this;
 	var bowerPath = loader.bowerPath || "bower_components";
-	loader.map["bower"] = bowerPath + "/system-bower/bower";
 
 	// Get bower dependencies
 	var bower = JSON.parse(load.source);
@@ -68,8 +78,8 @@ exports.translate = function(load){
 	config.paths = config.paths || {};
 
 	var main = bower.main && ((typeof bower.main === "string")
-															? bower.main : bower.main[0]);
-  setPaths(config, bowerPath, name, main);
+								? bower.main : bower.main[0]);
+	setPaths(config, bowerPath, name, main);
 
 	return "define(" + JSON.stringify(amdDeps) + ", function(loader){\n" +
 		"loader.config(" +JSON.stringify(config, null, " ") + ");" + "\n});";
