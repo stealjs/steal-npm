@@ -1,6 +1,6 @@
 {
   "name": "system-bower",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Bower plugin for StealJS and SystemJS",
   "main": "bower.js",
   "directories": {
