@@ -23,7 +23,7 @@
   "devDependencies": {
     "qunit": "~1.15.0",
     "lodash": "~2.4.1",
-    "canjs": "bitovi/canjs#bower",
+    "can": "bitovi/canjs#bower",
     "jquery": "~2.1.1",
     "steal": "bitovi/steal#bower-plugin",
     "system.js": "~0.10.1"
