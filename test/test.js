@@ -20,6 +20,13 @@ asyncTest("Loads buildConfig", function(){
 	}).then(start);
 });
 
+asyncTest("Replaces bower_components path in paths", function(){
+	System.bowerPath = "vendor";
+	System.import("test/alt_path/bower.json!bower").then(function(){
+		equal(System.paths.bar, "vendor/bar/bar.js", "Correct path set");
+	}).then(start);
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(System.isSteal) {
 	asyncTest("Modules with their own config works", function(){

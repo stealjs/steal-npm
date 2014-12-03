@@ -55,6 +55,15 @@ var setPaths = function(config, bowerPath, name, main) {
 		var mainDir = getMainDir(bowerPath, name, main);
 	}
 
+	// Replace bower_components in paths to the bowerPath
+	if(bowerPath !== "bower_components") {
+		var val;
+		for(var path in config.paths) {
+			val = config.paths[path];
+			config.paths[path] = val.replace("bower_components", bowerPath);
+		}
+	}
+
 	// Set the path to the `main` and the path to the wildcard.
 	config.paths[name] = [bowerPath, name, main].join('/');
 	config.paths[name + "/*"] = mainDir + "/*.js";
