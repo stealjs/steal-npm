@@ -12,6 +12,14 @@ asyncTest("Loads globals", function(){
 	}).then(start);
 });
 
+asyncTest("Loads buildConfig", function(){
+	System.import("test/build_config/bower.json!bower").then(function(){
+		var config = System.buildConfig;
+		ok(config, "buildConfig added");
+		equal(config.map.foo, "bar", "Correct map included");
+	}).then(start);
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(System.isSteal) {
 	asyncTest("Modules with their own config works", function(){
