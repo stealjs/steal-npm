@@ -27,5 +27,8 @@
     "jquery": "~2.1.1",
     "steal": "bitovi/steal#bower-plugin",
     "system.js": "~0.10.1"
+  },
+  "resolutions": {
+    "traceur": "0.0.58"
   }
 }
