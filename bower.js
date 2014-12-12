@@ -12,7 +12,6 @@ var excludedDeps = {
 	"system-bower": true
 };
 
-var loadedMain = false;
 // Combines together dependencies and devDependencies (if bowerDev option is enabled)
 var getDeps = function(loader, bower){
 	var deps = {};
@@ -26,7 +25,7 @@ var getDeps = function(loader, bower){
 	addDeps(bower.dependencies || {});
 	// Only get the devDependencies if this is the root bower and the 
 	// `bowerDev` option is enabled
-	if(loader.bowerDev && !loadedMain) {
+	if(loader.bowerDev && !loader._bowerMainLoaded) {
 		addDeps(bower.devDependencies || {});
 	}
 	return deps;
@@ -64,7 +63,7 @@ var setPaths = function(config, bowerPath, name, main) {
 	}
 
 	// Set the path to the `main` and the path to the wildcard.
-	if(loadedMain) {
+	if(this._bowerMainLoaded) {
 		config.paths[name] = [bowerPath, name, main].join('/');
 		config.paths[name + "/*"] = mainDir + "/*.js";
 	}
@@ -107,7 +106,7 @@ exports.translate = function(load){
 	// Get bower dependencies
 	var bower = JSON.parse(load.source);
 	var deps = getDeps(loader, bower);
-	
+
 	// Get the AMD dependencies
 	var amdDeps = [];
 	for(var dep in deps) {
@@ -121,7 +120,6 @@ exports.translate = function(load){
 	// Creates the configuration object. If the library provides a `system`
 	// object on its bower, use that as the base, otherwise we'll create our own.
 	var name = bower.name.toLowerCase();
-	var mainPackage = !loadedMain && name;
 	var config = bower.system || {};
 	config.paths = config.paths || {};
 
@@ -129,8 +127,8 @@ exports.translate = function(load){
 	var main = bower.main && ((typeof bower.main === "string")
 								? bower.main : bower.main[0]);
 	// Don't set any paths for the main bower.json
-	setPaths(config, bowerPath, name, main);
-	loadedMain = true;
+	setPaths.call(loader, config, bowerPath, name, main);
+	loader._bowerMainLoaded = true;
 
 	return "define(" + JSON.stringify(amdDeps) + ", function(loader){\n" +
 		"loader.config(" +JSON.stringify(config, null, " ") + ");" + "\n});";
