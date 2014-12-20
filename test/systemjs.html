@@ -13,15 +13,15 @@
 	<ol id="qunit-tests"></ol>
 	<div id="qunit-test-area"></div>
 
-	<script src="../bower_components/es6-module-loader/dist/es6-module-loader.js"></script>
-	<script src="../bower_components/system.js/dist/system.js"></script>
+	<script src="../node_modules/systemjs/node_modules/es6-module-loader/dist/es6-module-loader.js"></script>
+	<script src="../node_modules/systemjs/dist/system.js"></script>
 	<script src="../bower_components/qunit/qunit/qunit.js"></script>
 	<script>
 		System.baseURL = "../";
 		System.bowerDev = true;
 		QUnit.config.autostart = false;
 
-		System.import("bower.json!bower").then(function(){
+		System.import("package.json!npm").then(function(){
 			return System.import("test/test");
 		}).then(null, function(err){
 			console.error("Oh no, error!", err);

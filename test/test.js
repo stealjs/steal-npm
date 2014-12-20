@@ -12,7 +12,7 @@ asyncTest("Loads globals", function(){
 	}).then(start);
 });
 
-asyncTest("Loads buildConfig", function(){
+/*asyncTest("Loads buildConfig", function(){
 	System.import("test/build_config/bower.json!bower").then(function(){
 		var config = System.buildConfig;
 		ok(config, "buildConfig added");
@@ -25,7 +25,7 @@ asyncTest("Replaces bower_components path in paths", function(){
 	System.import("test/alt_path/bower.json!bower").then(function(){
 		equal(System.paths.bar, "vendor/bar/bar.js", "Correct path set");
 	}).then(start);
-});
+});*/
 
 // Only run these tests for StealJS (because it requires steal syntax)
 if(System.isSteal) {

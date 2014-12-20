@@ -1,8 +1,8 @@
 {
-  "name": "system-bower",
-  "version": "0.0.4",
-  "description": "Bower plugin for StealJS and SystemJS",
-  "main": "bower.js",
+  "name": "system-npm",
+  "version": "0.0.0",
+  "description": "npm plugin for StealJS and SystemJS",
+  "main": "npm.js",
   "directories": {
     "test": "test"
   },
@@ -11,17 +11,33 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/matthewp/system-bower.git"
+    "url": "https://github.com/bitovi/npm-bower.git"
   },
-  "author": "",
+  "author": "Bitovi",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/matthewp/system-bower/issues"
+    "url": "https://github.com/bitovi/npm-bower/issues"
   },
-  "homepage": "https://github.com/matthewp/system-bower",
+  "homepage": "https://github.com/bitovi/npm-bower",
   "devDependencies": {
     "bower": "^1.3.12",
     "grunt": "^0.4.5",
-    "testee": "^0.1.7"
+    "testee": "^0.1.7",
+    "qunit": "~0.7.5",
+    "lodash": "~2.4.1",
+    "canjs": "bitovi/canjs#minor",
+    "jquery": "~2.1.1",
+    "steal": "bitovi/steal#master",
+    "systemjs": "~0.10.1"
+  },
+  "system": {
+  	"npmIgnore": {
+  	  "bower": true,
+  	  "grunt": true,
+  	  "testee": true,
+  	  "systemjs": true,
+  	  "steal": true,
+  	  "qunit": true
+  	}
   }
 }
