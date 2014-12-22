@@ -1,8 +1,9 @@
 QUnit.module("system-bower plugin");
 
 asyncTest("Basics works", function(){
-	System.import("lodash").then(function(_){
+	System.import("transpile").then(function(_, underscore){
 		equal(typeof _, "function", "Function returned");
+		//equal(typeof underscore, "function", "Function returned");
 	}).then(start);
 });
 
@@ -11,6 +12,7 @@ asyncTest("Loads globals", function(){
 		ok($.fn.jquery, "jQuery loaded");
 	}).then(start);
 });
+
 
 /*asyncTest("Loads buildConfig", function(){
 	System.import("test/build_config/bower.json!bower").then(function(){

@@ -13,9 +13,108 @@ System.npmDev = true;
 
 
 // module name and path helpers
+function createModuleName (descriptor, standard) {
+	if(standard) {
+		return descriptor.moduleName;
+	} else {
+		return descriptor.packageName
+			+ (descriptor.version ? '@' + descriptor.version : '')
+			+ (descriptor.modulePath ? '#' + descriptor.modulePath : '')
+			+ (descriptor.plugin ? '!' + descriptor.plugin : '');
+	}
+	
+}
+
+// packageName#modulePath@version!plugin
+// "./lib/bfs"
+function parseModuleName (moduleName, currentPackageName) {
+	var pluginParts = moduleName.split('!');
+	var modulePathParts = pluginParts[0].split("#");
+	var versionParts = modulePathParts[0].split("@");
+	// it could be something like `@empty`
+	if(!modulePathParts[1] && !versionParts[0]) {
+		versionParts = ["@"+versionParts[0]];
+	}
+	var packageName, 
+		modulePath;
+	
+	// if relative, use currentPackageName
+	if( currentPackageName && isRelative(moduleName) ) {
+		packageName= currentPackageName;
+		modulePath = versionParts[0];
+	} else {
+		
+		if(modulePathParts[1]) { // foo@1.2#./path
+			packageName = versionParts[0];
+			modulePath = modulePathParts[1];
+		} else {
+			// test/abc
+			var folderParts = versionParts[0].split("/");
+			packageName = folderParts.shift();
+			modulePath = folderParts.join("/");
+		}
+		
+	}
+	
+	return {
+		plugin: pluginParts[1],
+		version: versionParts[1],
+		modulePath: modulePath,
+		packageName: packageName,
+		moduleName: moduleName
+	};
+}
+
+function parseURI(url) {
+	var m = String(url).replace(/^\s+|\s+$/g, '').match(/^([^:\/?#]+:)?(\/\/(?:[^:@]*(?::[^:@]*)?@)?(([^:\/?#]*)(?::(\d*))?))?([^?#]*)(\?[^#]*)?(#[\s\S]*)?/);
+		// authority = '//' + user + ':' + pass '@' + hostname + ':' port
+		return (m ? {
+		href     : m[0] || '',
+		protocol : m[1] || '',
+		authority: m[2] || '',
+		host     : m[3] || '',
+		hostname : m[4] || '',
+		port     : m[5] || '',
+		pathname : m[6] || '',
+		search   : m[7] || '',
+		hash     : m[8] || ''
+	} : null);
+}
+// TODO: merge with joinURL
+function joinURIs(base, href) {
+	function removeDotSegments(input) {
+		var output = [];
+		input.replace(/^(\.\.?(\/|$))+/, '')
+			.replace(/\/(\.(\/|$))+/g, '/')
+			.replace(/\/\.\.$/, '/../')
+			.replace(/\/?[^\/]*/g, function (p) {
+				if (p === '/..') {
+					output.pop();
+				} else {
+					output.push(p);
+				}
+			});
+		return output.join('').replace(/^\//, input.charAt(0) === '/' ? '/' : '');
+	}
+
+	href = parseURI(href || '');
+	base = parseURI(base || '');
+
+	return !href || !base ? null : (href.protocol || base.protocol) +
+		(href.protocol || href.authority ? href.authority : base.authority) +
+		removeDotSegments(href.protocol || href.authority || href.pathname.charAt(0) === '/' ? href.pathname : (href.pathname ? ((base.authority && !base.pathname ? '/' : '') + base.pathname.slice(0, base.pathname.lastIndexOf('/') + 1) + href.pathname) : base.pathname)) +
+			(href.protocol || href.authority || href.pathname ? href.search : (href.search || base.search)) +
+			href.hash;
+}
 
 function endsWithSlash(path){
 	return path[path.length -1] === "/";
+}
+function startsWithDotSlash( path ) {
+	return path.substr(0,2) === "./";
+}
+function isRelative(path) {
+	return  path.substr(0,1) === ".";
 }
 function removeTrailingSlash( path ) {
 	if(endsWithSlash(path)) {
@@ -25,16 +124,24 @@ function removeTrailingSlash( path ) {
 	}
 }
 function removeLeadingDotSlash( path ) {
-	if(path.substr(0,2) === "./") {
+	if(startsWithDotSlash(path)) {
 		return path.substr(2);
 	} else {
 		return path;
 	}
 }
+// TODO: merge joinURIs
 function joinURL(baseURL, url){
 	baseURL = removeTrailingSlash(baseURL);
 	url = removeLeadingDotSlash(url);
 	return baseURL+"/"+url;
+}
+function addJS(path){
+	if(/\.\w+$/.test(path)) {
+		return path;
+	} else {
+		return path+".js";
+	}
 }
 
 function packageFolderAddress(address){
@@ -80,24 +187,33 @@ exports.fetch = function(load){
 
 
 System.npmPackages = {};
-function findPackageByAddress(loader, parentAddress) {
+function findPackageByAddress(loader, parentName, parentAddress) {
 	if(loader.npm) {
+		if(parentName) {
+			var parsed = parseModuleName(parentName);
+			if(parsed.version && parsed.packageName) {
+				var name = parsed.packageName+"@"+parsed.version;
+				if(name in loader.npm) {
+					return loader.npm[name];
+				}
+			}
+		}
 		if(parentAddress) {
 			var packageFolder = packageFolderAddress(parentAddress);
 			return packageFolder ? loader.npmPaths[packageFolder] : loader.npmPaths.__default;
 		} else {
-			return loader.npmPaths.__default
+			return loader.npmPaths.__default;
 		}
 	}
 	
 }
 function findPackage(loader, name) {
-	if(loader.npm) {
-		
+	if(loader.npm && !startsWithDotSlash(name)) {
+		return loader.npm[name];
 	}
 }
 function findDepPackage(loader, refPackage, name) {
-	if(loader.npm && refPackage) {
+	if(loader.npm && refPackage && !startsWithDotSlash(name)) {
 		// Todo .. first part of name
 		var curPackage = childPackageAddress(refPackage.fileUrl, name).replace(/\/package\.json.*/,"");
 		while(curPackage) {
@@ -109,41 +225,94 @@ function findDepPackage(loader, refPackage, name) {
 			if(!parentAddress) {
 				return;
 			}
-			curPackage = parentAddress+"/"+pkg.name;
+			curPackage = parentAddress+"/"+name;
 		}
 	}
 }
 
+// should normalize main, so we know how to make something relative to it ...
+function parsedModuleNameFromPackage(loader, refPkg, name, parentName) {
+	// The refPkg might have a browser [https://github.com/substack/node-browserify#browser-field] mapping.
+	// Perform that mapping here.
+	var packageName = refPkg.name;
+	if(refPkg.browser && (name in refPkg.browser)) {
+		name = refPkg.browser[name] === false ? "@empty" : refPkg.browser[name];
+	}
+	var global = loader.globalBrowser && loader.globalBrowser[name];
+	if(global) {
+		name = global.moduleName === false ? "@empty" : global.moduleName;
+		packageName = global.pkg.name;
+	}
+	var parsedModuleName = parseModuleName(name, packageName);
+	if( isRelative( parsedModuleName.modulePath ) ) {
+		var parentParsed = parseModuleName( parentName, packageName );
+		if( parentParsed.packageName === parsedModuleName.packageName && parentParsed.modulePath ) {
+			parsedModuleName.modulePath = joinURIs(parentParsed.modulePath, parsedModuleName.modulePath);
+		}
+	}
+	return parsedModuleName;
+}
 
 var oldNormalize = System.normalize;
 System.normalize = function(name, parentName, parentAddress){
-	var refPkg = findPackageByAddress(this, parentAddress), 
-		depPkg = findDepPackage(this, refPkg, name);
+	
+	console.log("normalize",name, parentName, parentAddress);
 
-	if (!depPkg) {
-		depPkg = findPackage(this, name);
-	}
-	if(!depPkg) {
+	var refPkg = findPackageByAddress(this, parentName, parentAddress);
+	
+	// this isn't in a package, so ignore
+	if(!refPkg) {
 		return oldNormalize.call(this, name, parentName, parentAddress);
-	} else {
-		return name+"@"+depPkg.version;
-		
-		/*if (name === depPkg.name && depPkg.main) {
-			//normalized = depPkg.main.charAt(0) === '.'
-			//	? path.reduceLeadingDots(depPkg.main, path.ensureEndSlash(depPkg.name))
-			//	: path.joinPaths(depPkg.name, depPkg.main);
-		}*/
 	}
+	// TODO: joining ...
+	var parsedModuleName = parsedModuleNameFromPackage(this, refPkg, name, parentName);
+	
+	var depPkg = findDepPackage(this, refPkg, parsedModuleName.packageName);
+	
+	// This really shouldn't happen, but lets find a package.
+	if (!depPkg) {
+		depPkg = findPackage(this, parsedModuleName.packageName);
+	}
+	// It could be something like `fs` so check in globals
+	if(!depPkg) {
+		var browserPackageName = this.globalBrowser[parsedModuleName.packageName];
+		if(browserPackageName) {
+			parsedModuleName.packageName = browserPackageName;
+			depPkg = findPackage(this, parsedModuleName.packageName);
+		}
+	}
+	
+	if( depPkg ) {
+		parsedModuleName.version = depPkg.version;
+		// add the main path
+		if(!parsedModuleName.modulePath) {
+			parsedModuleName.modulePath = (typeof depPkg.browser === "string" && depPkg.browser) || depPkg.main || 'index';
+		}
+		return createModuleName(parsedModuleName);
+	} else {
+		// it could be a local module like components/foo
+		return oldNormalize.call(this, createModuleName(parsedModuleName, true), parentName, parentAddress);
+	}
+	
 };
 
 var oldLocate = System.locate;
 System.locate = function(load){
-	var atIndex = load.name.indexOf("@");
+	console.log("locate", load.name);
+
+	var parsedModuleName = parseModuleName(load.name);
+	
 	// @ is not the first character
-	if(atIndex > 0 && this.npm) {
-		var pkg = this.npm[load.name];
-		if(pkg) {
-			return joinURL( packageFolderAddress(pkg.fileUrl), pkg.main || "main.js");
+	if(parsedModuleName.version && this.npm) {
+		var pkg = this.npm[parsedModuleName.packageName];
+		if(pkg === this.npmPaths.__default) {
+			var loadCopy = extend({},load);
+			loadCopy.name = parsedModuleName.modulePath;
+			return oldLocate.call(this, loadCopy);
+		} else if(pkg) {
+			if(parsedModuleName.modulePath) {
+				return joinURL( packageFolderAddress(pkg.fileUrl), addJS(parsedModuleName.modulePath));
+			} 
 		}
 	}
 	return oldLocate.call(this, load);
@@ -213,7 +382,10 @@ exports.translate = function(load){
 					name: pkg.name,
 					version: pkg.version,
 					fileUrl: pkg.fileUrl,
-					main: pkg.main
+					main: pkg.main,
+					system: pkg.system,
+					globalBrowser: pkg.globalBrowser,
+					browser: pkg.browser
 				});
 				packages[pkg.name+"@"+pkg.version] = true;
 			}
@@ -345,12 +517,24 @@ var translateConfig = function(loader, packages){
 	if(!loader.npm) {
 		loader.npm = {};
 		loader.npmPaths = {};
+		loader.globalBrowser = {};
 	}
 	loader.npmPaths.__default = packages[0];
+	var setGlobalBrowser = function(globals, pkg){
+		for(var name in globals) {
+			loader.globalBrowser[name] = {
+				pkg: pkg,
+				moduleName: globals[name]
+			};
+		}
+	};
 	
 	packages.forEach(function(pkg){
 		if(pkg.system) {
 			loader.config(pkg.system);
+		}
+		if(pkg.globalBrowser) {
+			setGlobalBrowser(pkg.globalBrowser, pkg);
 		}
 		if(!loader.npm[pkg.name]) {
 			loader.npm[pkg.name] = pkg;
@@ -359,7 +543,7 @@ var translateConfig = function(loader, packages){
 		var pkgAddress = pkg.fileUrl.replace(/\/package\.json.*/,"");
 		loader.npmPaths[pkgAddress] = pkg;
 	});
-	
+	console.log("WROTE OUT NPM")
 };
 
 

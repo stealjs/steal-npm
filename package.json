@@ -28,7 +28,9 @@
     "canjs": "bitovi/canjs#minor",
     "jquery": "~2.1.1",
     "steal": "bitovi/steal#master",
-    "systemjs": "~0.10.1"
+    "systemjs": "~0.10.1",
+    "transpile": "0.3.1",
+    "browser-builtins": "bitovi/node-browser-builtins#master"
   },
   "system": {
   	"npmIgnore": {
