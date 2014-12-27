@@ -399,6 +399,7 @@ exports.translate = function(load){
 			}
 		});
 		return "define(['@loader'], function(loader){\n" +
+		    (pkg.main ? "System.main = "+JSON.stringify(pkg.main)+";\n" : "") + 
 			"("+translateConfig.toString()+")(loader, "+JSON.stringify(packages, null, " ")+");\n" +
 		"});";
 	});
@@ -606,7 +607,6 @@ var translateConfig = function(loader, packages){
 		var pkgAddress = pkg.fileUrl.replace(/\/package\.json.*/,"");
 		loader.npmPaths[pkgAddress] = pkg;
 	});
-	console.log("WROTE OUT NPM")
 };
 
 
