@@ -25,7 +25,7 @@ function createModuleName (descriptor, standard) {
 	
 }
 
-// packageName#modulePath@version!plugin
+// packageName@version!plugin#modulePath
 // "./lib/bfs"
 function parseModuleName (moduleName, currentPackageName) {
 	var pluginParts = moduleName.split('!');
@@ -230,27 +230,35 @@ function findDepPackage(loader, refPackage, name) {
 	}
 }
 
-// should normalize main, so we know how to make something relative to it ...
 function parsedModuleNameFromPackage(loader, refPkg, name, parentName) {
-	// The refPkg might have a browser [https://github.com/substack/node-browserify#browser-field] mapping.
-	// Perform that mapping here.
-	var packageName = refPkg.name;
-	if(refPkg.browser && (name in refPkg.browser)) {
-		name = refPkg.browser[name] === false ? "@empty" : refPkg.browser[name];
-	}
-	var global = loader.globalBrowser && loader.globalBrowser[name];
-	if(global) {
-		name = global.moduleName === false ? "@empty" : global.moduleName;
-		packageName = global.pkg.name;
-	}
-	var parsedModuleName = parseModuleName(name, packageName);
+	var packageName = refPkg.name,
+	    parsedModuleName = parseModuleName(name, packageName);
+	    
 	if( isRelative( parsedModuleName.modulePath ) ) {
 		var parentParsed = parseModuleName( parentName, packageName );
 		if( parentParsed.packageName === parsedModuleName.packageName && parentParsed.modulePath ) {
 			parsedModuleName.modulePath = joinURIs(parentParsed.modulePath, parsedModuleName.modulePath);
 		}
 	}
-	return parsedModuleName;
+	var mapName = createModuleName(parsedModuleName),
+	    mappedName;
+	
+	// The refPkg might have a browser [https://github.com/substack/node-browserify#browser-field] mapping.
+	// Perform that mapping here.
+	if(refPkg.browser && (mapName in refPkg.browser)) {
+		mappedName = refPkg.browser[mapName] === false ? "@empty" : refPkg.browser[mapName];
+	}
+	// globalBrowser looks like: {moduleName: aliasName, pgk: aliasingPkg}
+	var global = loader && loader.globalBrowser && loader.globalBrowser[mapName];
+	if(global) {
+		mappedName = global.moduleName === false ? "@empty" : global.moduleName;
+	}
+	
+	if(mappedName) {
+		return parseModuleName(mappedName, packageName);
+	} else {
+		return parsedModuleName;
+	}
 }
 
 var oldNormalize = System.normalize;
@@ -384,8 +392,8 @@ exports.translate = function(load){
 					fileUrl: pkg.fileUrl,
 					main: pkg.main,
 					system: pkg.system,
-					globalBrowser: pkg.globalBrowser,
-					browser: pkg.browser
+					globalBrowser: convertBrowser(pkg, pkg.globalBrowser ),
+					browser: convertBrowser(pkg,  pkg.browser )
 				});
 				packages[pkg.name+"@"+pkg.version] = true;
 			}
@@ -395,6 +403,52 @@ exports.translate = function(load){
 		"});";
 	});
 };
+
+function convertBrowser(pkg, browser) {
+	if(typeof browser === "string") {
+		return browser;
+	}
+	var map = {};
+	for(var fromName in browser) {
+		convertBrowserProperty(map, pkg, fromName, browser[fromName]);
+	}
+	return map;
+}
+
+/**
+ * Converts browser names into actual module names.
+ * 
+ * Example:
+ * 
+ * ```
+ * {
+ * 	 "foo": "browser-foo"
+ *   "traceur#src/node/traceur": "./browser/traceur"
+ *   "./foo" : "./foo-browser"
+ * }
+ * ```
+ * 
+ * converted to:
+ * 
+ * ```
+ * {
+ * 	 // any foo ... regardless of where
+ *   "foo": "browser-foo"
+ *   // this module ... ideally minus version
+ *   "traceur#src/node/traceur": "transpile#./browser/traceur"
+ *   "transpile#./foo" : "transpile#./foo-browser"
+ * }
+ * ```
+ */
+function convertBrowserProperty(map, pkg, fromName, toName) {
+	var packageName = pkg.name;
+	
+	var fromParsed = parseModuleName(fromName, packageName),
+		  toParsed = parseModuleName(toName, packageName);
+	
+	map[createModuleName(fromParsed)] = createModuleName(toParsed);
+}
+
 
 var extend = function(d, s){
 	for(var prop in s) {
@@ -514,6 +568,15 @@ function npmTraverseUp(context, pkg, fileUrl) {
 }
 
 var translateConfig = function(loader, packages){
+	var g;
+	if(typeof window !== "undefined") {
+		g = window;
+	} else {
+		g = global;
+	}
+	g.process = {
+		cwd: function(){}
+	};
 	if(!loader.npm) {
 		loader.npm = {};
 		loader.npmPaths = {};

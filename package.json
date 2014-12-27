@@ -29,8 +29,9 @@
     "jquery": "~2.1.1",
     "steal": "bitovi/steal#master",
     "systemjs": "~0.10.1",
-    "transpile": "0.3.1",
-    "browser-builtins": "bitovi/node-browser-builtins#master"
+    "transpile": "bitovi/transpile#browser",
+    "browser-builtins": "bitovi/node-browser-builtins#master",
+    "system-json": "bitovi/system-json#master"
   },
   "system": {
   	"npmIgnore": {
