@@ -120,9 +120,14 @@ var extension = function(System){
 				packageName: refPkg.name,
 				modulePath: name
 			});
-			if(name[0] === "$" || name[0] === "@") {
+			if(
+				// starts with special characters
+				name[0] === "$" || name[0] === "@" ||
+				// root package not given a name or version
+				(!refPkg.version || !refPkg.name)
+				) {
 				modName = name;
-			}
+			} 
 			return oldNormalize.call(this, modName, parentName, parentAddress);
 		}
 		
