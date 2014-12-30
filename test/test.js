@@ -47,6 +47,13 @@ asyncTest("meta", function(){
 	}).then(start);
 });
 
+asyncTest("module names that start with @", function(){
+	GlobalSystem.paths["@foo"] = "test/foo.js";
+	GlobalSystem.import("@foo").then(function(foo){
+		equal(foo,"bar", "got 123");
+	}).then(start);
+});
+
 /*asyncTest("Loads buildConfig", function(){
 	System.import("test/build_config/bower.json!bower").then(function(){
 		var config = System.buildConfig;
