@@ -35,11 +35,17 @@ asyncTest("transpile works", function(){
 
 
 asyncTest("Loads globals", function(){
-	GlobalSystem.import("jquery").then(function(){
+	GlobalSystem.import("jquery").then(function($){
 		ok($.fn.jquery, "jQuery loaded");
 	}).then(start);
 });
 
+asyncTest("meta", function(){
+
+	GlobalSystem.import("test/meta").then(function(meta){
+		equal(meta,"123", "got 123");
+	}).then(start);
+});
 
 /*asyncTest("Loads buildConfig", function(){
 	System.import("test/build_config/bower.json!bower").then(function(){

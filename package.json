@@ -28,7 +28,7 @@
     "canjs": "bitovi/canjs#minor",
     "jquery": "~2.1.1",
     "steal": "bitovi/steal#master",
-    "systemjs": "~0.10.1",
+    "systemjs": "bitovi/systemjs#61aa3d06c1ad5321b55948c0c87c0219d420acdb",
     "transpile": "bitovi/transpile#browser",
     "browser-builtins": "bitovi/node-browser-builtins#master",
     "system-json": "bitovi/system-json#master"
@@ -41,6 +41,9 @@
   	  "systemjs": true,
   	  "steal": true,
   	  "qunit": true
+  	},
+  	"meta": {
+  		"test/meta": {"format": "global", "exports": "foo"}
   	}
   }
 }
