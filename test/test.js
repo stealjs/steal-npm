@@ -66,6 +66,16 @@ asyncTest("jquery-ui", function(){
 
 });
 
+asyncTest("import self", function(){
+	Promise.all([
+		GlobalSystem.import("system-npm"),
+		GlobalSystem.import("system-npm/test/meta")
+	]).then(function(mods){
+		equal(mods[0], "example-main", "example-main");
+		equal(mods[1], "123", "system-npm/test/meta");
+	}).then(start);
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
