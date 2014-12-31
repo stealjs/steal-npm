@@ -43,7 +43,7 @@
   	  "qunit": true
   	},
   	"meta": {
-  		"test/meta": {"format": "global", "exports": "foo"}
+  		"./test/meta": {"format": "global", "exports": "foo"}
   	}
   }
 }

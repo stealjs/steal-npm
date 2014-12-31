@@ -27,6 +27,27 @@ System.import("package.json!npm").then(function() {
 });
 ```
 
+### Meta
+
+The meta config works similar to the base `System.meta` behavior.  However, the module names must:
+
+ - Start with `./` to add metadata to modules within the package like `"./src/util"`, or
+ - Look like `packageName#modulePath` to add metadata to direct dependencies of the package.
+
+Example:
+
+```js
+{
+  "system": {
+    "meta": {
+      "./src/utils": {"format": "amd"},
+      "jquery": {"format": "global"},
+      "lodash#array/grep": {"format": "es6"}
+    }
+  }
+}
+```
+
 ## Configuring
 
 coming soon.
