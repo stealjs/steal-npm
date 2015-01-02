@@ -1,6 +1,34 @@
 QUnit.module("system-npm plugin");
 var GlobalSystem = window.System;
 
+
+var makeIframe = function(src){
+	var iframe = document.createElement('iframe');
+	window.removeMyself = function(){
+		delete window.removeMyself;
+		document.body.removeChild(iframe);
+		QUnit.start();
+	};
+	document.body.appendChild(iframe);
+	iframe.src = src;
+};
+
+asyncTest("createModuleName and parseModuleName", function(){
+	GlobalSystem['import']("npm-extension")
+		.then(function(npmExtension){
+			var parsed = npmExtension.parseModuleName("abc/foo/def","bar");
+			equal(parsed.modulePath, "foo/def", "is absolute");
+			
+			var parsed = npmExtension.parseModuleName("abc#./foo/def","bar");
+			equal(parsed.modulePath, "./foo/def", "is relative");
+			
+			var res = npmExtension.createModuleName(parsed);
+			equal(res,"abc#foo/def", "set back to absolute");
+			
+		}).then(QUnit.start);
+	
+});
+
 asyncTest("transpile works", function(){
 	Promise.all([
 		System.import("transpile"),
@@ -76,12 +104,23 @@ asyncTest("import self", function(){
 	}).then(start);
 });
 
+asyncTest("module names", function(){
+	makeIframe("not_relative_main/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
-		GlobalSystem.import("can/control/control").then(function(Control){
+		Promise.all([
+			GlobalSystem.import("can"),
+			GlobalSystem.import("can/control/control")
+		]).then(function(mods){
+			var can = mods[0],
+				Control = mods[1];
 			ok(Control.extend, "Control has an extend method");
+			ok(can.Control.extend, "control");
 		}).then(start);
+		
 	});
 }
 

@@ -31,7 +31,8 @@
     "systemjs": "bitovi/systemjs#61aa3d06c1ad5321b55948c0c87c0219d420acdb",
     "transpile": "bitovi/transpile#browser",
     "browser-builtins": "bitovi/node-browser-builtins#master",
-    "system-json": "bitovi/system-json#master"
+    "system-json": "bitovi/system-json#master",
+    "steal-qunit": "bitovi/steal-qunit#master"
   },
   "system": {
   	"npmIgnore": {
