@@ -20,7 +20,10 @@
 		System.paths["css"] = "../../node_modules/steal/ext/css.js";
 		
 		System.import("package.json!npm").then(function(){
-			return System.import("dep");
+			return Promise.all([
+				System.import("dep"),
+				System.import("peer")
+			]).then(removeMyself);
 		}).then(null, function(err){
 			console.error("Oh no, error!", err);
 		});
