@@ -108,6 +108,10 @@ asyncTest("module names", function(){
 	makeIframe("not_relative_main/dev.html");
 });
 
+asyncTest("main does not include .js in map", function(){
+	makeIframe("map_main/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
