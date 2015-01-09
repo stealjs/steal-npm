@@ -28,7 +28,7 @@
     "jquery-ui": "^1.10.5",
     "can": "bitovi/canjs#minor",
     "steal": "bitovi/steal#npm",
-    "systemjs": "bitovi/systemjs#61aa3d06c1ad5321b55948c0c87c0219d420acdb",
+    "systemjs": "bitovi/systemjs#b664e4cd359c013acb3445627d1e1e1799424542",
     "transpile": "bitovi/transpile#browser",
     "browser-builtins": "bitovi/node-browser-builtins#master",
     "system-json": "bitovi/system-json#master",
