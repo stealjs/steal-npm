@@ -1,0 +1,10 @@
+{
+  "name": "ignore_browser",
+  "version": "0.0.0",
+  "browser": {
+    "./util" : "./browser_util"
+  },
+  "system": {
+    "ignoreBrowser": true
+  }
+}

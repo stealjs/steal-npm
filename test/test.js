@@ -112,6 +112,10 @@ asyncTest("main does not include .js in map", function(){
 	makeIframe("map_main/dev.html");
 });
 
+asyncTest("ignoreBrowser", function(){
+	makeIframe("ignore_browser/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
