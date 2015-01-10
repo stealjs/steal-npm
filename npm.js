@@ -91,7 +91,7 @@ exports.translate = function(load){
 		});
 		return "define(['@loader'], function(loader){\n" +
 			npmExtension.out()+
-		    (pkg.main ? "if(!System.main){ System.main = "+JSON.stringify(pkgMain(pkg))+"; }\n" : "") + 
+		    (pkg.main ? "if(!System.main){ System.main = "+JSON.stringify(npmExtension.pkgMain(pkg))+"; }\n" : "") + 
 			"("+translateConfig.toString()+")(loader, "+JSON.stringify(packages, null, " ")+");\n" +
 		"});";
 	});
