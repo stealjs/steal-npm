@@ -2,7 +2,8 @@
   "name": "ignore_browser",
   "version": "0.0.0",
   "browser": {
-    "./util" : "./browser_util"
+    "./util" : "./browser_util",
+    "transform": []
   },
   "system": {
     "ignoreBrowser": true
