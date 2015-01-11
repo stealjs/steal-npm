@@ -116,6 +116,10 @@ asyncTest("ignoreBrowser", function(){
 	makeIframe("ignore_browser/dev.html");
 });
 
+asyncTest("directories.lib", function(){
+	makeIframe("directories_lib/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
