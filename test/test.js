@@ -120,6 +120,10 @@ asyncTest("directories.lib", function(){
 	makeIframe("directories_lib/dev.html");
 });
 
+asyncTest("github ranges as requested versions are matched", function(){
+	makeIframe("git_ranges/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
