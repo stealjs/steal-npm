@@ -124,6 +124,10 @@ asyncTest("github ranges as requested versions are matched", function(){
 	makeIframe("git_ranges/dev.html");
 });
 
+asyncTest("support an alternate name for npm modules", function(){
+	makeIframe("alt_name/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
