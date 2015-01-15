@@ -27,6 +27,10 @@ System.import("package.json!npm").then(function() {
 });
 ```
 
+## Configuration
+
+All of the configuration happens within the `system` property of your `package.json`.
+
 ### Meta
 
 The meta config works similar to the base `System.meta` behavior.  However, the module names must:
@@ -48,9 +52,28 @@ Example:
 }
 ```
 
-## Configuring
+### npmIgnore
 
-coming soon.
+Use npmIgnore to prevent package information from being loaded for specified dependencies
+or the `peerDependencies`, `devDependencies`, or `dependencies`.  The following
+ignores a package.json's `devDependencies` and `cssify`.  But all other
+dependencies will be loaded:
+
+```js
+{
+  "dependencies": {
+    "canjs": "2.1.0",
+    "cssify": "^0.6.0"
+  },
+  "devDependencies": {
+    "steal-tools": "0.5.0"
+  },
+  "system": {
+    "npmIgnore": ["devDependencies","cssify"]
+  }
+}
+```
+
 
 ## License
 

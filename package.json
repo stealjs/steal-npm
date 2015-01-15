@@ -35,14 +35,7 @@
     "steal-qunit": "bitovi/steal-qunit#master"
   },
   "system": {
-  	"npmIgnore": {
-  	  "bower": true,
-  	  "grunt": true,
-  	  "testee": true,
-  	  "systemjs": true,
-  	  "steal": true,
-  	  "qunit": true
-  	},
+  	"npmIgnore": ["bower","grunt","testee","systemjs","steal","qunit"],
   	"meta": {
   		"./test/meta": {"format": "global", "exports": "foo"}
   	}

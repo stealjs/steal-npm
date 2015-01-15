@@ -1,6 +1,16 @@
 "format cjs";
 
 
+
+
+// HELPERS
+var extend = function(d, s){
+	for(var prop in s) {
+		d[prop] = s[prop];
+	}
+	return d;
+};
+
 // HELPERS USED BY npm.js
 function isRelative(path) {
 	return  path.substr(0,1) === ".";
@@ -168,11 +178,11 @@ var extension = function(System){
 					
 					var lib = pkg.system && pkg.system.directories && pkg.system.directories.lib;
 					if(lib) {
-						root = joinURL(root, lib);
+						root = joinURIs(addEndingSlash(root), lib);
 					}
 					
 					if(parsedModuleName.modulePath) {
-						return joinURL( root, addJS(parsedModuleName.modulePath));
+						return joinURIs( addEndingSlash(root), addJS(parsedModuleName.modulePath));
 					} 
 					
 					return address;
@@ -332,25 +342,8 @@ var extension = function(System){
 	function endsWithSlash(path){
 		return path[path.length -1] === "/";
 	}
-	function removeTrailingSlash( path ) {
-		if(endsWithSlash(path)) {
-			return path.substr(0, path.length -1);
-		} else {
-			return path;
-		}
-	}
-	function removeLeadingDotSlash( path ) {
-		if(startsWithDotSlash(path)) {
-			return path.substr(2);
-		} else {
-			return path;
-		}
-	}
-	// TODO: merge joinURIs
-	function joinURL(baseURL, url){
-		baseURL = removeTrailingSlash(baseURL);
-		url = removeLeadingDotSlash(url);
-		return baseURL+"/"+url;
+	function addEndingSlash(path){
+		return endsWithSlash(path) ? path : path+"/";
 	}
 };
 
@@ -361,6 +354,8 @@ exports.childPackageAddress = childPackageAddress;
 exports.parentNodeModuleAddress= parentNodeModuleAddress;
 exports.isRelative= isRelative;
 exports.pkgMain = pkgMain;
+exports.extend = extend;
+
 
 exports.out = function(){
 	return [createModuleName,parseModuleName,isRelative, removeJS, pkgMain, childPackageAddress, parentNodeModuleAddress].join("\n")+"\n"+

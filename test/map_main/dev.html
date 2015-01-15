@@ -12,12 +12,8 @@
 	<script src="../../node_modules/systemjs/node_modules/es6-module-loader/dist/es6-module-loader.js"></script>
 	<script src="../../node_modules/systemjs/dist/system.js"></script>
 	<script src="../../node_modules/system-json/json.js"></script>
+	<script src="../system_test_config.js"></script>
 	<script>
-		System.paths["npm"] = "../../npm.js";
-		System.paths["npm-extension"] = "../../npm-extension.js";
-		System.paths["semver"] = "../../semver.js";
-		System.paths["@traceur"] = "../../node_modules/steal/ext/traceur.js";
-		System.paths["css"] = "../../node_modules/steal/ext/css.js";
 		
 		System.import("package.json!npm").then(function(){
 			QUnit.equal(System.map["dep@1.2.2#dep"], "dep@1.2.2#main");
