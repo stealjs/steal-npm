@@ -2,7 +2,7 @@
 
 // TODO: cleanup removing package.json
 var utils = require('./npm-utils');
-var crawl = require('./crawl');
+var crawl = require('./npm-crawl');
 
 
 // Add @loader, for SystemJS
