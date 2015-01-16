@@ -74,6 +74,8 @@ dependencies will be loaded:
 }
 ```
 
+### ignoreBrowser
+
 
 ## License
 

@@ -13,16 +13,16 @@ var makeIframe = function(src){
 	iframe.src = src;
 };
 
-asyncTest("createModuleName and parseModuleName", function(){
-	GlobalSystem['import']("npm-extension")
-		.then(function(npmExtension){
-			var parsed = npmExtension.parseModuleName("abc/foo/def","bar");
+asyncTest("utils.moduleName.create and utils.moduleName.parse", function(){
+	GlobalSystem['import']("npm-utils")
+		.then(function(utils){
+			var parsed = utils.moduleName.parse("abc/foo/def","bar");
 			equal(parsed.modulePath, "foo/def", "is absolute");
 			
-			var parsed = npmExtension.parseModuleName("abc#./foo/def","bar");
+			var parsed = utils.moduleName.parse("abc#./foo/def","bar");
 			equal(parsed.modulePath, "./foo/def", "is relative");
 			
-			var res = npmExtension.createModuleName(parsed);
+			var res = utils.moduleName.create(parsed);
 			equal(res,"abc#foo/def", "set back to absolute");
 			
 		}).then(QUnit.start);

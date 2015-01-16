@@ -1,4 +1,4 @@
-var npmExtension = require("./npm-extension");
+var utils = require("./npm-utils");
 var SemVer = require('./semver');
 /**
  * @module {{}} system-npm/crawl
@@ -14,7 +14,7 @@ var crawl = {
 	 */
 	processPkgSource: function(context, pkg, source) {
 		var packageJSON = JSON.parse(source);
-		npmExtension.extend(pkg, packageJSON);
+		utils.extend(pkg, packageJSON);
 		context.packages.push(pkg);
 		return pkg;
 	},
@@ -34,7 +34,7 @@ var crawl = {
 				// check one node_module level higher
 				childPkg.origFileUrl = nodeModuleAddress(pkg.fileUrl)+"/"+childPkg.name+"/package.json";
 			} else {
-				childPkg.origFileUrl = npmExtension.childPackageAddress(pkg.fileUrl, childPkg.name);
+				childPkg.origFileUrl = utils.path.depPackage(pkg.fileUrl, childPkg.name);
 			}
 			
 			// check if childPkg matches a parent's version ... if it does ... do nothing
@@ -143,8 +143,8 @@ var crawl = {
 	},
 	hasParentPackageThatMatches: function(context, childPkg){
 		// check paths
-		var parentAddress = npmExtension.parentNodeModuleAddress(childPkg.origFileUrl);
-		while(parentAddress) {
+		var parentAddress = utils.path.parentNodeModuleAddress(childPkg.origFileUrl);
+		while( parentAddress ) {
 			var packageAddress = parentAddress+"/"+childPkg.name+"/package.json";
 			var parentPkg = context.paths[packageAddress];
 			if(parentPkg) {
@@ -152,7 +152,7 @@ var crawl = {
 					return parentPkg;
 				}
 			}
-			parentAddress = npmExtension.parentNodeModuleAddress(packageAddress);
+			parentAddress = utils.path.parentNodeModuleAddress(packageAddress);
 		}
 	}
 };
@@ -183,7 +183,7 @@ function addDeps(packageJSON, dependencies, deps, defaultProps){
 	
 	for(var name in dependencies) {
 		if(!npmIgnore || !npmIgnore[name]) {
-			deps[name] = npmExtension.extend(defaultProps || {}, {name: name, version: dependencies[name]});
+			deps[name] = utils.extend(defaultProps || {}, {name: name, version: dependencies[name]});
 		}
 	}
 }
@@ -208,7 +208,7 @@ function npmLoad(context, pkg, fileUrl){
 
 function npmTraverseUp(context, pkg, fileUrl) {
 	// make sure we aren't loading something we've already loaded
-	var parentAddress = npmExtension.parentNodeModuleAddress(fileUrl);
+	var parentAddress = utils.path.parentNodeModuleAddress(fileUrl);
 	if(!parentAddress) {
 		throw new Error('Did not find ' + pkg.origFileUrl);
 	}

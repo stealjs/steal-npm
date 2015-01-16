@@ -1,5 +1,6 @@
 // All the configs that System needs
 System.paths["npm"] = "../../npm.js";
+System.paths["npm-utils"] = "../../npm-utils.js";
 System.paths["npm-extension"] = "../../npm-extension.js";
 System.paths["npm-extend"] = "../../npm-extend.js";
 System.paths["crawl"] = "../../crawl.js";

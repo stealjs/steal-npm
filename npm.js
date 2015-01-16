@@ -1,11 +1,9 @@
 "format cjs";
 
 // TODO: cleanup removing package.json
-var npmExtension = require('./npm-extension');
+var utils = require('./npm-utils');
 var crawl = require('./crawl');
 
-var createModuleName = npmExtension.createModuleName;
-var parseModuleName = npmExtension.parseModuleName;
 
 // Add @loader, for SystemJS
 if(!System.has("@loader")) {
@@ -63,9 +61,9 @@ exports.translate = function(load){
 				packages[pkg.name+"@"+pkg.version] = true;
 			}
 		});
-		return "define(['@loader'], function(loader){\n" +
-			npmExtension.out()+
-		    (pkg.main ? "if(!System.main){ System.main = "+JSON.stringify(npmExtension.pkgMain(pkg))+"; }\n" : "") + 
+		return "define(['@loader','npm-extension'], function(loader, npmExtension){\n" +
+			"npmExtension.addExtension(loader);\n"+
+		    (pkg.main ? "if(!System.main){ System.main = "+JSON.stringify(utils.pkg.main(pkg))+"; }\n" : "") + 
 			"("+translateConfig.toString()+")(loader, "+JSON.stringify(packages, null, " ")+");\n" +
 		"});";
 	});
@@ -115,8 +113,8 @@ function convertPropertyNamesAndValues (context, pkg, map , root) {
 }
 
 function convertName (context, pkg, map, root, name) {
-	var parsed = parseModuleName(name, pkg.name);
-	if(name.indexOf("#") >= 0) {
+	var parsed = utils.moduleName.parse(name, pkg.name);
+	if( name.indexOf("#") >= 0 ) {
 		
 		if(parsed.packageName === pkg.name) {
 			parsed.version = pkg.version;
@@ -126,7 +124,7 @@ function convertName (context, pkg, map, root, name) {
 			var depPkg = context.versions[parsed.packageName][requestedVersion];
 			parsed.version = depPkg.version;
 		}
-		return createModuleName(parsed);
+		return utils.moduleName.create(parsed);
 		
 	} else {
 		
@@ -135,7 +133,7 @@ function convertName (context, pkg, map, root, name) {
 		} else {
 			// this is for a module within the package
 			if (property.substr(0,2) === "./" ) {
-				return createModuleName({
+				return utils.moduleName.create({
 					packageName: pkg.name,
 					modulePath: name,
 					version: pkg.version,
@@ -163,9 +161,9 @@ function convertName (context, pkg, map, root, name) {
 				
 				parsed.version = depPkg.version;
 				if(!parsed.modulePath) {
-					parsed.modulePath = npmExtension.pkgMain(depPkg);
+					parsed.modulePath = utils.pkg.main(depPkg);
 				}
-				return createModuleName(parsed);
+				return utils.moduleName.create(parsed);
 			}
 			
 		}
@@ -214,10 +212,10 @@ function convertBrowser(pkg, browser) {
 function convertBrowserProperty(map, pkg, fromName, toName) {
 	var packageName = pkg.name;
 	
-	var fromParsed = parseModuleName(fromName, packageName),
-		  toParsed = toName  ? parseModuleName(toName, packageName): "@empty";
+	var fromParsed = utils.moduleName.parse(fromName, packageName),
+		  toParsed = toName  ? utils.moduleName.parse(toName, packageName): "@empty";
 	
-	map[createModuleName(fromParsed)] = createModuleName(toParsed);
+	map[utils.moduleName.create(fromParsed)] = utils.moduleName.create(toParsed);
 }
 
 
