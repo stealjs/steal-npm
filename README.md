@@ -93,6 +93,12 @@ dependencies will be loaded:
 }
 ```
 
+The following packages are ignored by default:
+
+ - "steal", "steal-tools"
+ - "bower"
+ - "grunt", "grunt-cli"
+
 ### ignoreBrowser
 
 Set to true to ignore browserfy's `"browser"` and `"browserify"` configurations.
