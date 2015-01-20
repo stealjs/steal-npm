@@ -63,7 +63,6 @@ var crawl = {
 			}).filter(truthy));
 		});
 	},
-	// Combines together dependencies and devDependencies (if npmDev option is enabled)
 	/**
 	 * Returns an array of the dependency names that should be crawled.
 	 * @param {Object} loader

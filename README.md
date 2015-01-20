@@ -111,7 +111,7 @@ Set a folder to look for module's within your project.  Only the `lib`
 directory can be specified.
 
 In the following setup, `"my-project/my-utils"` will be looked for in
-`my-project/lib/my-utils.js`:
+`my-project/src/my-utils.js`:
 
 ```js
 {
