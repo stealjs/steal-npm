@@ -31,7 +31,26 @@ System.import("package.json!npm").then(function() {
 
 All of the configuration happens within the `system` property of your `package.json`.
 
-### Meta
+### main
+
+The moduleName of the initial module that should be loaded when the package is imported.  This works similar to
+a `System.map` setting. For example:
+
+```
+{
+  "name": "my-module",
+  "version": "1.2.3",
+  "system": {
+    "main": "my-main"
+  }
+}
+```
+
+When `"my-module"` is imported, `my-module@1.2.3#my-main` will be the actual module name being 
+imported.  This path that `my-main` will be found depends on the `directories.lib` setting.
+
+
+### meta
 
 The meta config works similar to the base `System.meta` behavior.  However, the module names must:
 
@@ -76,6 +95,34 @@ dependencies will be loaded:
 
 ### ignoreBrowser
 
+Set to true to ignore browserfy's `"browser"` and `"browserify"` configurations.
+
+```js
+{
+  "system": {
+    "ignoreBrowser": true
+  }
+}
+```
+
+### directories
+
+Set a folder to look for module's within your project.  Only the `lib` 
+directory can be specified.
+
+In the following setup, `"my-project/my-utils"` will be looked for in
+`my-project/lib/my-utils.js`:
+
+```js
+{
+  "name": "my-project"
+  "system": {
+    "directories" : {
+      "lib" : "src"
+    }
+  }
+}
+```
 
 ## License
 
