@@ -29,6 +29,18 @@ asyncTest("utils.moduleName.create and utils.moduleName.parse", function(){
 	
 });
 
+asyncTest("crawl.getDependencyMap", function(){
+	GlobalSystem['import']("npm-crawl")
+		.then(function(crawl){
+			var deps = crawl.getDependencyMap({}, {
+				dependencies: {"bower": "1.2.3", "can": "2.2.2"}
+			});
+			deepEqual(deps, { "can": {name: "can", version: "2.2.2"}});
+			
+		}).then(QUnit.start);
+	
+});
+
 asyncTest("transpile works", function(){
 	Promise.all([
 		System.import("transpile"),
