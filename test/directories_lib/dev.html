@@ -16,14 +16,35 @@
 	<script>
 		
 		System.import("package.json!npm").then(function(){
-			System.import("main").then(function(main){
+			
+			// package name works
+			var packageName = System.import("directories_lib").then(function(main){
 				if(window.QUnit) {
 					QUnit.equal(main.default.util.name, "util");
-					removeMyself();
 				} else {
 					console.log(main);
 				}
-				
+			});
+			
+			var packageUtil = System.import("directories_lib/util").then(function(util){
+				if(window.QUnit) {
+					QUnit.equal(util.name, "util");
+				} else {
+					console.log(util.name);
+				}
+			});
+			
+			var test = System.import("test/test").then(function(test){
+				test = test["default"];
+				if(window.QUnit) {
+					QUnit.equal(test.name, "test/test","got name");
+					QUnit.equal(test.foo.name, "foo");
+					QUnit.equal(test.directories_lib.util.name, "util");
+				}
+			});
+			
+			Promise.all([packageName,packageUtil,test]).then(function(){
+				removeMyself && removeMyself();
 			}, function(e){
 				if(window.QUnit) {
 					QUnit.ok(false, e);
@@ -32,7 +53,7 @@
 					console.log(e);
 					setTimeout(function(){
 						throw e;
-					});
+					},1);
 				}
 				
 			});
