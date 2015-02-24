@@ -1,4 +1,4 @@
 "format amd";
 define([], function(){
-	return {name: "util"};
+	return {name: "other"};
 });
