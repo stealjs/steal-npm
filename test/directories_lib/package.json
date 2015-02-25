@@ -1,5 +1,6 @@
 {
   "name": "directories_lib",
+  "main": "main.js",
   "version": "0.0.0",
   "dependencies": {
     "dep": "1.2.2"

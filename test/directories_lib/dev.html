@@ -42,6 +42,14 @@
 					QUnit.equal(test.directories_lib.util.name, "util");
 				}
 			});
+
+			var main = System.import(System.main).then(function(main){
+				if(window.QUnit) {
+					QUnit.equal(main.default.util.name, "util");
+				} else {
+					console.log(main);
+				}
+			});
 			
 			Promise.all([packageName,packageUtil,test]).then(function(){
 				removeMyself && removeMyself();
