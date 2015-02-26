@@ -61,7 +61,7 @@ exports.translate = function(load){
 			}
 		});
 		var configDependencies = ['@loader','npm-extension'].concat(packageDependencies(pkg));
-		var pkgMain = hasDirectoriesLib(pkg) ?
+		var pkgMain = utils.pkg.hasDirectoriesLib(pkg) ?
 			convertName(context, pkg, false, true, pkg.name+"/"+utils.pkg.main(pkg)) :
 			utils.pkg.main(pkg);
 
@@ -296,8 +296,3 @@ var translateConfig = function(loader, packages){
 		loader.npmPaths[pkgAddress] = pkg;
 	});
 };
-
-function hasDirectoriesLib(pkg) {
-	var system = pkg.system;
-	return system && system.directories && !!system.directories.lib;
-}

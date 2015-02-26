@@ -46,7 +46,8 @@ exports.addExtension = function(System){
 			}
 		}
 		// It could be the root main.
-		if(!depPkg && refPkg === this.npmPaths.__default && name === refPkg.main) {
+		if(!depPkg && refPkg === this.npmPaths.__default && name === refPkg.main &&
+		  utils.pkg.hasDirectoriesLib(refPkg)) {
 			parsedModuleName.version = refPkg.version;
 			parsedModuleName.packageName = refPkg.name;
 			parsedModuleName.modulePath = utils.pkg.main(refPkg);
