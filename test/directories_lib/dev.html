@@ -51,7 +51,7 @@
 				}
 			});
 			
-			Promise.all([packageName,packageUtil,test]).then(function(){
+			Promise.all([packageName,packageUtil,test,main]).then(function(){
 				removeMyself && removeMyself();
 			}, function(e){
 				if(window.QUnit) {
