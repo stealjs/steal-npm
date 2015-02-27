@@ -73,12 +73,12 @@ asyncTest("transpile works", function(){
 	}).then(start);
 });
 
-
 asyncTest("Loads globals", function(){
 	GlobalSystem.import("jquery").then(function($){
 		ok($.fn.jquery, "jQuery loaded");
-	}).then(start);
+	}).then(start, start);
 });
+
 
 asyncTest("meta", function(){
 
@@ -102,7 +102,7 @@ asyncTest("jquery-ui", function(){
 	]).then(function(mods){
 		var $ = mods[0];
 		ok($.fn.draggable);
-	}).then(start);
+	}).then(start, start);
 
 });
 

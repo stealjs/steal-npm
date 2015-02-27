@@ -21,23 +21,34 @@
   "homepage": "https://github.com/bitovi/npm-bower",
   "devDependencies": {
     "bower": "^1.3.12",
-    "grunt": "^0.4.5",
-    "testee": "^0.1.7",
-    "qunit": "~0.7.5",
-    "lodash": "~2.4.1",
-    "jquery-ui": "^1.10.5",
-    "can": "bitovi/canjs#minor",
-    "steal": "bitovi/steal#npm",
-    "systemjs": "bitovi/systemjs#b664e4cd359c013acb3445627d1e1e1799424542",
-    "transpile": "bitovi/transpile#browser",
     "browser-builtins": "bitovi/node-browser-builtins#master",
+    "can": "bitovi/canjs#minor",
+    "grunt": "^0.4.5",
+    "jquery": "^2.1.3",
+    "jquery-ui": "^1.10.5",
+    "lodash": "~2.4.1",
+    "qunit": "~0.7.5",
+    "steal": "bitovi/steal#npm",
+    "steal-qunit": "bitovi/steal-qunit#master",
     "system-json": "bitovi/system-json#master",
-    "steal-qunit": "bitovi/steal-qunit#master"
+    "systemjs": "bitovi/systemjs#b664e4cd359c013acb3445627d1e1e1799424542",
+    "testee": "^0.1.7",
+    "transpile": "bitovi/transpile#browser"
   },
   "system": {
-  	"npmIgnore": ["bower","grunt","testee","systemjs","steal","qunit"],
-  	"meta": {
-  		"./test/meta": {"format": "global", "exports": "foo"}
-  	}
+    "npmIgnore": [
+      "bower",
+      "grunt",
+      "testee",
+      "systemjs",
+      "steal",
+      "qunit"
+    ],
+    "meta": {
+      "./test/meta": {
+        "format": "global",
+        "exports": "foo"
+      }
+    }
   }
 }
