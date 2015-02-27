@@ -11,10 +11,10 @@ done for you.
 
 If you're using StealJS you don't have have to install this plugin, it's included by default.
 
-If you're using SystemJS install this as another bower dependency:
+If you're using SystemJS install this as another npm dependency:
 
 ```js
-bower install system-npm --save-dev
+npm install system-npm --save-dev
 ```
 
 ## Use
