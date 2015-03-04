@@ -43,8 +43,8 @@ asyncTest("crawl.getDependencyMap", function(){
 
 asyncTest("transpile works", function(){
 	Promise.all([
-		System.import("transpile"),
-		System.import("jquery")
+		System["import"]("transpile"),
+		System["import"]("jquery")
 	]).then(function(res){
 		var transpile = res[0],
 			$ = res[1];
@@ -74,7 +74,7 @@ asyncTest("transpile works", function(){
 });
 
 asyncTest("Loads globals", function(){
-	GlobalSystem.import("jquery").then(function($){
+	GlobalSystem["import"]("jquery").then(function($){
 		ok($.fn.jquery, "jQuery loaded");
 	}).then(start, start);
 });
@@ -82,14 +82,14 @@ asyncTest("Loads globals", function(){
 
 asyncTest("meta", function(){
 
-	GlobalSystem.import("test/meta").then(function(meta){
+	GlobalSystem["import"]("test/meta").then(function(meta){
 		equal(meta,"123", "got 123");
 	}).then(start);
 });
 
 asyncTest("module names that start with @", function(){
 	GlobalSystem.paths["@foo"] = "test/foo.js";
-	GlobalSystem.import("@foo").then(function(foo){
+	GlobalSystem["import"]("@foo").then(function(foo){
 		equal(foo,"bar", "got 123");
 	}).then(start);
 });
@@ -97,8 +97,8 @@ asyncTest("module names that start with @", function(){
 asyncTest("jquery-ui", function(){
 	GlobalSystem.paths["@foo"] = "test/foo.js";
 	Promise.all([
-		GlobalSystem.import("jquery"),
-		GlobalSystem.import("jquery-ui/draggable")
+		GlobalSystem["import"]("jquery"),
+		GlobalSystem["import"]("jquery-ui/draggable")
 	]).then(function(mods){
 		var $ = mods[0];
 		ok($.fn.draggable);
@@ -108,8 +108,8 @@ asyncTest("jquery-ui", function(){
 
 asyncTest("import self", function(){
 	Promise.all([
-		GlobalSystem.import("system-npm"),
-		GlobalSystem.import("system-npm/test/meta")
+		GlobalSystem["import"]("system-npm"),
+		GlobalSystem["import"]("system-npm/test/meta")
 	]).then(function(mods){
 		equal(mods[0], "example-main", "example-main");
 		equal(mods[1], "123", "system-npm/test/meta");
@@ -144,8 +144,8 @@ asyncTest("support an alternate name for npm modules", function(){
 if(window.steal) {
 	asyncTest("canjs", function(){
 		Promise.all([
-			GlobalSystem.import("can"),
-			GlobalSystem.import("can/control/control")
+			GlobalSystem["import"]("can"),
+			GlobalSystem["import"]("can/control/control")
 		]).then(function(mods){
 			var can = mods[0],
 				Control = mods[1];
