@@ -140,6 +140,10 @@ asyncTest("support an alternate name for npm modules", function(){
 	makeIframe("alt_name/dev.html");
 });
 
+asyncTest("works with packages that have multiple versions of the same dependency", function(){
+	makeIframe("mult_dep/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
