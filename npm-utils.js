@@ -58,6 +58,14 @@ var utils = {
 			}
 		},
 		/**
+		 * @function moduleName.isNpm
+		 * Determines whether a moduleName is npm-like.
+		 * @return {Boolean}
+		 */
+		isNpm: function(moduleName){
+			return /.+@\d+\.\d+\.\d+#.+/.test(moduleName);
+		},
+		/**
 		 * @function moduleName.parse
 		 * Breaks a string moduleName into parts.
 		 * packageName@version!plugin#modulePath
