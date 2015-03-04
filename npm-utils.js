@@ -33,7 +33,7 @@ var utils = {
 	forEach: function(arr, fn) {
 		var i = 0, len = arr.length;
 		for(; i < len; i++) {
-			fn.call(arr, arr[i]);
+			fn.call(arr, arr[i], i);
 		}
 	},
 	moduleName: {
@@ -63,7 +63,7 @@ var utils = {
 		 * @return {Boolean}
 		 */
 		isNpm: function(moduleName){
-			return /.+@\d+\.\d+\.\d+#.+/.test(moduleName);
+			return /.+@.+\..+\..+#.+/.test(moduleName);
 		},
 		/**
 		 * @function moduleName.parse
