@@ -6,6 +6,9 @@
  * However, it can have all npm-extension helpers.
  */
 
+// A regex to test if a moduleName is npm-like.
+var npmModuleRegEx = /.+@.+\..+\..+#.+/;
+
 var utils = {
 	extend: function(d, s){
 		for(var prop in s) {
@@ -33,7 +36,7 @@ var utils = {
 	forEach: function(arr, fn) {
 		var i = 0, len = arr.length;
 		for(; i < len; i++) {
-			fn.call(arr, arr[i]);
+			fn.call(arr, arr[i], i);
 		}
 	},
 	moduleName: {
@@ -56,6 +59,14 @@ var utils = {
 					+ (modulePath ? '#' + modulePath : '')
 					+ (descriptor.plugin ? descriptor.plugin : '');
 			}
+		},
+		/**
+		 * @function moduleName.isNpm
+		 * Determines whether a moduleName is npm-like.
+		 * @return {Boolean}
+		 */
+		isNpm: function(moduleName){
+			return npmModuleRegEx.test(moduleName);
 		},
 		/**
 		 * @function moduleName.parse
