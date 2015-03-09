@@ -107,4 +107,47 @@ exports.addExtension = function(System){
 		return oldLocate.call(this, load);
 	};
 
+	// Given a moduleName convert it into a npm-style moduleName if it belongs
+	// to a package.
+	var convertName = function(loader, name){
+		var pkg = utils.pkg.findByName(loader, name.split("/")[0]);
+		if(pkg) {
+			var parsed = utils.moduleName.parse(name, pkg.name);
+			parsed.version = pkg.version;
+			if(!parsed.modulePath) {
+				parsed.modulePath = utils.pkg.main(pkg);
+			}
+			return utils.moduleName.create(parsed);
+		}
+		return name;
+	};
+
+	var configSpecial = {
+		map: function(map){
+			var newMap = {};
+			for(var name in map) {
+				newMap[convertName(this, name)] = convertName(this, map[name]);
+			}
+			return newMap;
+		},
+		paths: function(paths){
+			var newPaths = {};
+			for(var name in paths) {
+				newPaths[convertName(this, name)] = paths[name];
+			}
+			return newPaths;
+		}
+	};
+
+
+	var oldConfig = System.config;
+	System.config = function(cfg){
+		var loader = this;
+		for(var name in cfg) {
+			if(configSpecial[name]) {
+				cfg[name] = configSpecial[name].call(loader, cfg[name]);
+			}
+		}
+		oldConfig.apply(loader, arguments);
+	};
 };
