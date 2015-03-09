@@ -87,7 +87,7 @@ exports.addExtension = function(System){
 		var parsedModuleName = utils.moduleName.parse(load.name),
 			loader = this;
 		// @ is not the first character
-		if(parsedModuleName.version && this.npm) {
+		if(parsedModuleName.version && this.npm && !loader.paths[load.name]) {
 			var pkg = this.npm[parsedModuleName.packageName];
 			if(pkg) {
 				return oldLocate.call(this, load).then(function(address){
