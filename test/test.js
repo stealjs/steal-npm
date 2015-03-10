@@ -144,6 +144,10 @@ asyncTest("works with packages that have multiple versions of the same dependenc
 	makeIframe("mult_dep/dev.html");
 });
 
+asyncTest("works when System.map and System.paths are provided", function(){
+	makeIframe("map_paths/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
