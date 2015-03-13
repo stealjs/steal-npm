@@ -116,6 +116,17 @@ asyncTest("import self", function(){
 	}).then(start);
 });
 
+asyncTest("modules using process.env", function(){
+	GlobalSystem.env = "development";
+	GlobalSystem["delete"]("package.json!npm");
+	delete window.process;
+	GlobalSystem["import"]("package.json!npm").then(function() {
+		return GlobalSystem["import"]("test/env");
+	}).then(function(env){
+		equal(env, "development", "loaded the env");
+	}).then(start);
+});
+
 asyncTest("module names", function(){
 	makeIframe("not_relative_main/dev.html");
 });
