@@ -2,6 +2,13 @@
 module.exports = function(grunt){
 
 	grunt.initConfig({
+		copy: {
+			toSteal: {
+				files: [
+					{ expand: true, src: ['npm*'], dist: 'node_modules/steal/ext/', filter: 'isFile'}
+				]
+			}
+		},
 		testee: {
 			options: {
 				browsers: ["firefox"]
@@ -13,7 +20,8 @@ module.exports = function(grunt){
 		}
 	});
 
+	grunt.loadNpmTasks('grunt-contrib-copy');
 	grunt.loadNpmTasks("testee");
 
-	grunt.registerTask("test", ["testee:all"]);
+	grunt.registerTask("test", ["copy", "testee:all"]);
 };
