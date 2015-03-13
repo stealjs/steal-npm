@@ -1,5 +1,7 @@
 # system-npm
 
+[![Build Status](https://travis-ci.org/stealjs/system-npm.svg?branch=master)](https://travis-ci.org/stealjs/system-npm)
+
 This is a plugin for [SystemJS](https://github.com/systemjs/systemjs) and 
 [StealJS](http://stealjs.com/) that makes it easy to work with [npm](https://www.npmjs.com/).
 
