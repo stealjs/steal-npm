@@ -19,6 +19,10 @@
 		}
 
 		System.import("package.json!npm").then(function(){
+			if(hasQUnit()) {
+				QUnit.equal(System.paths["dep@1.2.2#other"], "other.js");
+			}
+
 			System.config({
 				map: {
 					"dep/dep": "dep"
