@@ -248,7 +248,10 @@ var translateConfig = function(loader, packages){
 	}
 	if(!g.process) {
 		g.process = {
-			cwd: function(){}
+			cwd: function(){},
+			env: {
+				NODE_ENV: loader.env
+			}
 		};
 	}
 	
