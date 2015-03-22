@@ -163,6 +163,10 @@ asyncTest("browser config pointing to an alt main", function(){
 	makeIframe("browser/dev.html");
 });
 
+asyncTest("browser config to ignore a module", function(){
+	makeIframe("browser-false/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
