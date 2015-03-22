@@ -23,6 +23,10 @@ npm install system-npm --save-dev
 
 ### SystemJS
 
+Configure SystemJS to load **system-npm** and then use the plugin to load your `package.json` file.
+See the [demo folder](https://github.com/stealjs/system-npm/tree/master/demo/systemjs) for
+an example app with SystemJS.
+
 ```js
 System.import("package.json!npm").then(function() {
   // Configurations set, you can start importing stuff
