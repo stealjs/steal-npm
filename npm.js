@@ -160,7 +160,7 @@ function convertName (context, pkg, map, root, name) {
 				} else {
 					var requestedProject = crawl.getDependencyMap(context.loader, pkg, root)[parsed.packageName];
 					if(!requestedProject) {
-						console.warn("WARN: Could not find ", name , "in node_modules. Ignoring.");
+						warn(name);
 						return name;
 					}
 					requestedVersion = requestedProject.version;
@@ -310,3 +310,15 @@ var translateConfig = function(loader, packages){
 		loader.npmPaths[pkgAddress] = pkg;
 	});
 };
+
+var warn = (function(){
+	var warned = {};
+	return function(name){
+		if(!warned[name]) {
+			warned[name] = true;
+			var warning = "WARN: Could not find " + name + " in node_modules. Ignoring.";
+			if(console.warn) console.warn(warning);
+			else console.log(warning);
+		}
+	};
+})();
