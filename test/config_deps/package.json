@@ -1,0 +1,7 @@
+{
+  "name": "config-deps",
+  "main": "main",
+  "version": "1.0.0",
+  "dependencies": {
+  }
+}

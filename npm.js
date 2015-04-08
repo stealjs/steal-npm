@@ -62,7 +62,7 @@ exports.translate = function(load){
 				packages[pkg.name+"@"+pkg.version] = true;
 			}
 		});
-		var configDependencies = ['@loader','npm-extension'].concat(packageDependencies(pkg));
+		var configDependencies = ['@loader','npm-extension'].concat(configDeps.call(loader, pkg));
 		var pkgMain = utils.pkg.hasDirectoriesLib(pkg) ?
 			convertName(context, pkg, false, true, pkg.name+"/"+utils.pkg.main(pkg)) :
 			utils.pkg.main(pkg);
@@ -231,11 +231,15 @@ function convertBrowserProperty(map, pkg, fromName, toName) {
 }
 
 // Dependencies from a package.json file specified in `system.configDependencies`
-function packageDependencies(pkg) {
+function configDeps(pkg) {
+	var deps = [];
 	if(pkg.system && pkg.system.configDependencies) {
-		return pkg.system.configDependencies;
+		deps = deps.concat(pkg.system.configDependencies);
 	}
-	return [];
+	if(this.configDependencies) {
+		deps = deps.concat(this.configDependencies);
+	}
+	return deps;
 }
 
 
