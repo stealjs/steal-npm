@@ -167,6 +167,10 @@ asyncTest("browser config to ignore a module", function(){
 	makeIframe("browser-false/dev.html");
 });
 
+asyncTest("configDependencies combined from loader and pkg.system", function(){
+	makeIframe("config_deps/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
