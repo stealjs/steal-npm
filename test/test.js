@@ -171,6 +171,10 @@ asyncTest("configDependencies combined from loader and pkg.system", function(){
 	makeIframe("config_deps/dev.html");
 });
 
+asyncTest("Converting name of git versions works", function(){
+	makeIframe("git_config/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
