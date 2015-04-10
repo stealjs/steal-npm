@@ -175,6 +175,10 @@ asyncTest("Converting name of git versions works", function(){
 	makeIframe("git_config/dev.html");
 });
 
+asyncTest("local mappings are applied in normalize", function(){
+	makeIframe("map_same/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
