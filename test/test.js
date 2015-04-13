@@ -179,6 +179,10 @@ asyncTest("local mappings are applied in normalize", function(){
 	makeIframe("map_same/dev.html");
 });
 
+asyncTest("contextual maps work", function(){
+	makeIframe("contextual_map/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
