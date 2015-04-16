@@ -183,6 +183,24 @@ asyncTest("contextual maps work", function(){
 	makeIframe("contextual_map/dev.html");
 });
 
+QUnit.module("npmDependencies");
+
+asyncTest("are used exclusively if npmIgnore is not provided", function(){
+	makeIframe("npm_deps_only/dev.html");
+});
+
+asyncTest("override npmIgnore when npmIgnore is provided", function(){
+	makeIframe("npm_deps_override/dev.html");
+});
+
+asyncTest("ignores devDependencies when no npmDependencies is provided", function(){
+	makeIframe("npm_deps_devignore/dev.html");
+});
+
+asyncTest("npmIgnore a single module works", function(){
+	makeIframe("npm_deps_ignore/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
