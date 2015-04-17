@@ -183,6 +183,10 @@ asyncTest("contextual maps work", function(){
 	makeIframe("contextual_map/dev.html");
 });
 
+asyncTest("configDependencies can override config with systemConfig export", function(){
+	makeIframe("ext_config/dev.html");
+});
+
 QUnit.module("npmDependencies");
 
 asyncTest("are used exclusively if npmIgnore is not provided", function(){

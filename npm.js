@@ -69,7 +69,8 @@ exports.translate = function(load){
 
 		return "define("+JSON.stringify(configDependencies)+", function(loader, npmExtension){\n" +
 			"npmExtension.addExtension(loader);\n"+
-		    (pkg.main ? "if(!loader.main){ loader.main = "+JSON.stringify(pkgMain)+"; }\n" : "") + 
+		    (pkg.main ? "if(!loader.main){ loader.main = "+JSON.stringify(pkgMain)+"; }\n" : "") +
+			"loader._npmExtensions = [].slice.call(arguments, 2);\n" +
 			"("+translateConfig.toString()+")(loader, "+JSON.stringify(packages, null, " ")+");\n" +
 		"});";
 	});
@@ -320,6 +321,12 @@ var translateConfig = function(loader, packages){
 		loader.npm[pkg.name+"@"+pkg.version] = pkg;
 		var pkgAddress = pkg.fileUrl.replace(/\/package\.json.*/,"");
 		loader.npmPaths[pkgAddress] = pkg;
+	});
+	forEach(loader._npmExtensions || [], function(ext){
+		// If there is a systemConfig use that as configuration
+		if(ext.systemConfig) {
+			loader.config(ext.systemConfig);
+		}
 	});
 };
 
