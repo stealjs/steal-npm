@@ -22,19 +22,19 @@
   "devDependencies": {
     "bower": "^1.3.12",
     "browser-builtins": "bitovi/node-browser-builtins#master",
-    "can": "bitovi/canjs#minor",
+    "can": "2.2.4",
     "grunt": "^0.4.5",
     "grunt-contrib-copy": "^0.8.0",
     "jquery": "^2.1.3",
     "jquery-ui": "^1.10.5",
     "lodash": "~2.4.1",
     "qunit": "~0.7.5",
-    "steal": "^0.7.0",
+    "steal": "^0.10.0",
     "steal-qunit": "bitovi/steal-qunit#master",
-    "system-json": "bitovi/system-json#master",
+    "system-json": "0.0.2",
     "systemjs": "bitovi/systemjs#b664e4cd359c013acb3445627d1e1e1799424542",
     "testee": "^0.1.7",
-    "transpile": "bitovi/transpile#browser"
+    "transpile": "bitovi/transpile#c2aeb23ad82b21fdf7f7da989bccbd6ad04e9f13"
   },
   "system": {
     "npmIgnore": [

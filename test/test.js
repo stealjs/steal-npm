@@ -18,15 +18,15 @@ asyncTest("utils.moduleName.create and utils.moduleName.parse", function(){
 		.then(function(utils){
 			var parsed = utils.moduleName.parse("abc/foo/def","bar");
 			equal(parsed.modulePath, "foo/def", "is absolute");
-			
+
 			var parsed = utils.moduleName.parse("abc#./foo/def","bar");
 			equal(parsed.modulePath, "./foo/def", "is relative");
-			
+
 			var res = utils.moduleName.create(parsed);
 			equal(res,"abc#foo/def", "set back to absolute");
-			
+
 		}).then(QUnit.start);
-	
+
 });
 
 asyncTest("crawl.getDependencyMap", function(){
@@ -36,9 +36,9 @@ asyncTest("crawl.getDependencyMap", function(){
 				dependencies: {"bower": "1.2.3", "can": "2.2.2"}
 			});
 			deepEqual(deps, { "can": {name: "can", version: "2.2.2"}});
-			
+
 		}).then(QUnit.start);
-	
+
 });
 
 asyncTest("transpile works", function(){
@@ -48,28 +48,28 @@ asyncTest("transpile works", function(){
 	]).then(function(res){
 		var transpile = res[0],
 			$ = res[1];
-			
+
 		equal(typeof transpile, "object", "object returned");
 		equal(typeof $, "function", "function returned");
-		
+
 		return new Promise(function(resolve, reject){
 
 				$.ajax("../node_modules/transpile/test/tests/es6.js",{dataType: "text"}).then(function(data){
 					var res = transpile.to({
-						source: ""+data, 
-						address: "../node_modules/transpile/test/tests/es6.js", 
-						name: "tests/es6", 
+						source: ""+data,
+						address: "../node_modules/transpile/test/tests/es6.js",
+						name: "tests/es6",
 						metadata: {format: "es6"}
 					}, "cjs");
-					
+
 					return $.ajax("../node_modules/transpile/test/tests/expected/es6_cjs.js",{dataType: "text"})
 						.then(function(answer){
 							QUnit.equal(answer, res);
 					});
-					
+
 				}, reject).then(resolve, reject);
 		});
-		
+
 	}).then(start);
 });
 
@@ -217,7 +217,11 @@ if(window.steal) {
 			ok(Control.extend, "Control has an extend method");
 			ok(can.Control.extend, "control");
 		}).then(start);
-		
+
+	});
+
+	asyncTest("load in a webworker", function(){
+		makeIframe("worker/dev.html");
 	});
 }
 
