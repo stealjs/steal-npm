@@ -164,7 +164,7 @@ function convertName (context, pkg, map, root, name) {
 				} else {
 					var requestedProject = crawl.getDependencyMap(context.loader, pkg, root)[parsed.packageName];
 					if(!requestedProject) {
-						warn(name);
+						if(root) warn(name);
 						return name;
 					}
 					requestedVersion = requestedProject.version;
