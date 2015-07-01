@@ -163,6 +163,10 @@ asyncTest("browser config pointing to an alt main", function(){
 	makeIframe("browser/dev.html");
 });
 
+asyncTest("browser config mapping one file to another", function(){
+  makeIframe("browser-map/dev.html");
+});
+
 asyncTest("browser config to ignore a module", function(){
 	makeIframe("browser-false/dev.html");
 });

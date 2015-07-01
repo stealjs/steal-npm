@@ -321,8 +321,11 @@ var utils = {
 		startsWithDotSlash: function( path ) {
 			return path.substr(0,2) === "./";
 		},
+		endsWith: function (path, pattern) {
+			return path.indexOf(pattern, path.length - pattern.length) !== -1;
+		},
 		endsWithSlash: function(path){
-			return path[path.length -1] === "/";
+			return utils.path.endsWith(path, "/");
 		},
 		addEndingSlash: function(path){
 			return utils.path.endsWithSlash(path) ? path : path+"/";

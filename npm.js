@@ -234,9 +234,33 @@ function convertBrowserProperty(map, pkg, fromName, toName) {
 	var packageName = pkg.name;
 
 	var fromParsed = utils.moduleName.parse(fromName, packageName),
-		  toParsed = toName  ? utils.moduleName.parse(toName, packageName): "@empty";
+		fromModulePath = utils.path.removeJS(fromParsed.modulePath),
+		trailingIndex = '/index', toParsed, toModuleName;
 
-	map[utils.moduleName.create(fromParsed)] = utils.moduleName.create(toParsed);
+	// Overwrite the modulePath with the ".js"-less module path
+	fromParsed.modulePath = fromModulePath;
+
+	if (toName) {
+		toParsed = utils.moduleName.parse(toName, packageName);
+		toParsed.modulePath = utils.path.removeJS(toParsed.modulePath);
+	} else {
+		toParsed = "@empty";
+	}
+
+	toModuleName = utils.moduleName.create(toParsed);
+
+	map[utils.moduleName.create(fromParsed)] = toModuleName;
+
+	// If an entry ends in "/index" create another mapping without the "/index"
+	// so that both "foo/bar/index" and "foo/bar" map to the specified path.
+	if (utils.path.endsWith(fromModulePath, trailingIndex)) {
+
+		// Overwrite the module path with the "/index"-less module path
+		fromParsed.modulePath =
+			fromModulePath.substring(0, fromModulePath.indexOf(trailingIndex));
+
+		map[utils.moduleName.create(fromParsed)] = toModuleName;
+	}
 }
 
 // Dependencies from a package.json file specified in `system.configDependencies`
