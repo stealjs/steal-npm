@@ -1,0 +1,7 @@
+{
+	"name": "extconfig",
+	"main": "main",
+	"dependencies": {
+		"dep": "1.0.0"
+	}
+}
