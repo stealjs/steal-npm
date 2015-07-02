@@ -149,7 +149,7 @@ var utils = {
 			
 			// we have the moduleName without the version
 			// we check this against various configs
-			var mapName = utils.moduleName.create(parsedModuleName),
+			var mapName = utils.path.removeJS(utils.moduleName.create(parsedModuleName)),
 			    mappedName;
 			
 			// The refPkg might have a browser [https://github.com/substack/node-browserify#browser-field] mapping.
