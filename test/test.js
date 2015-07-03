@@ -187,6 +187,10 @@ asyncTest("configDependencies can override config with systemConfig export", fun
 	makeIframe("ext_config/dev.html");
 });
 
+asyncTest("global process", function(){
+	makeIframe("global_process/dev.html");
+});
+
 QUnit.module("npmDependencies");
 
 asyncTest("are used exclusively if npmIgnore is not provided", function(){

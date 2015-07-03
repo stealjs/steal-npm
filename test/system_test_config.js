@@ -6,3 +6,4 @@ System.paths["npm-crawl"] = "../../npm-crawl.js";
 System.paths["semver"] = "../../semver.js";
 System.paths["@traceur"] = "../../node_modules/steal/ext/traceur.js";
 System.paths["css"] = "../../node_modules/steal/ext/css.js";
+System.paths["process"] = "../../node_modules/steal-builtins/node_modules/process/browser";

@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+	<title>SystemJS tests</title>
+</head>
+<body>
+	<script>
+		window.QUnit = window.parent.QUnit;
+		window.removeMyself = window.parent.removeMyself;
+	</script>
+
+	<script src="../../node_modules/systemjs/node_modules/es6-module-loader/dist/es6-module-loader.js"></script>
+	<script src="../../node_modules/systemjs/dist/system.js"></script>
+	<script src="../../node_modules/system-json/json.js"></script>
+	<script src="../system_test_config.js"></script>
+	<script>
+		System.env = 'fooEnv';
+		System.import("package.json!npm").then(function(){
+			System.import(System.main).then(function(process){
+				if(window.QUnit) {
+					QUnit.ok(typeof process.cwd === 'function', "process.cwd() is defined");
+					QUnit.equal(process.browser, true, "browser flag is set");
+					QUnit.equal(process.env.NODE_ENV, 'fooEnv', "environment is set");
+					removeMyself();
+				} else {
+					console.log(process);
+				}
+				
+			}, function(e){
+				if(window.QUnit) {
+					QUnit.ok(false, e);
+					removeMyself();
+				} else {
+					console.log(e);
+					setTimeout(function(){
+						throw e;
+					});
+				}
+				
+			});
+			
+			
+		}).then(null, function(err){
+			console.error("Oh no, error!", err);
+		});
+	</script>
+</body>
+</html>

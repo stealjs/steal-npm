@@ -1,0 +1,10 @@
+{
+	"name": "browserify_shims",
+	"main": "main",
+	"dependencies": {
+		"node-dep": "1.0.0"
+	},
+	"system": {
+		"env": "chris"
+	}
+}
