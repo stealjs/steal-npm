@@ -62,12 +62,16 @@ exports.translate = function(load){
 				packages[pkg.name+"@"+pkg.version] = true;
 			}
 		});
-		var configDependencies = ['@loader','npm-extension'].concat(configDeps.call(loader, pkg));
+		var configDependencies = [
+			'@loader',
+			'npm-extension',
+			'process'
+		].concat(configDeps.call(loader, pkg));
 		var pkgMain = utils.pkg.hasDirectoriesLib(pkg) ?
 			convertName(context, pkg, false, true, pkg.name+"/"+utils.pkg.main(pkg)) :
 			utils.pkg.main(pkg);
 
-		return "define("+JSON.stringify(configDependencies)+", function(loader, npmExtension){\n" +
+		return "define("+JSON.stringify(configDependencies)+", function(loader, npmExtension, process){\n" +
 			"npmExtension.addExtension(loader);\n"+
 		    (pkg.main ? "if(!loader.main){ loader.main = "+JSON.stringify(pkgMain)+"; }\n" : "") +
 			"loader._npmExtensions = [].slice.call(arguments, 2);\n" +
@@ -255,12 +259,8 @@ function configDeps(pkg) {
 var translateConfig = function(loader, packages){
 	var g = loader.global;
 	if(!g.process) {
-		g.process = {
-			cwd: function(){},
-			env: {
-				NODE_ENV: loader.env
-			}
-		};
+		g.process = process;
+		g.process.env.NODE_ENV = loader.env;
 	}
 
 	if(!loader.npm) {
