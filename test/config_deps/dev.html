@@ -24,6 +24,7 @@
 		System["import"]("package.json!npm").then(function(){
 			if(hasQUnit()) {
 				QUnit.equal(window.DEP, "this is a config dep");
+				QUnit.notEqual(System.configDependencies[0], "my-dep", "An npm dependency's configDependencies should not be part of the configDependencies array.");
 			} else {
 				console.log(window.DEP);
 			}
