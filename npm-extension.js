@@ -4,6 +4,9 @@ var utils = require("./npm-utils");
 exports.includeInBuild = true;
 
 exports.addExtension = function(System){
+
+	var resolvedNames = {};
+
 	/**
 	 * Normalize has to deal with a "tricky" situation.  There are module names like
 	 * "css" -> "css" normalize like normal
@@ -18,6 +21,12 @@ exports.addExtension = function(System){
 	 */
 	var oldNormalize = System.normalize;
 	System.normalize = function(name, parentName, parentAddress){
+
+		// Use the fallback parentName if one is defined
+		if (parentName in resolvedNames) {
+			parentName = resolvedNames[parentName];
+		}
+
 		// If this is a relative module name and the parent is not an npm module
 		// we can skip all of this logic.
 		if(parentName && utils.path.isRelative(name) &&
@@ -114,6 +123,27 @@ exports.addExtension = function(System){
 			}
 		}
 		return oldLocate.call(this, load);
+	};
+
+	var oldFetch = System.fetch;
+		System.fetch = function (load) {
+			var self = this;
+
+			return oldFetch.apply(this, arguments).then(null, function () {
+				var name = utils.path.addEndingSlash(load.name) + 'index';
+				var address = utils.path.removeJS(load.address);
+				address = utils.path.addEndingSlash(address);
+				address = utils.path.joinURIs(address, 'index');
+				address = utils.path.addJS(address);
+
+				// load.address + '/index.js'
+				load.address = address;
+
+				return oldFetch.call(self, load).then(function () {
+					resolvedNames[load.name] = name;
+					return arguments[0];
+				}, null);
+		});
 	};
 
 	// Given a moduleName convert it into a npm-style moduleName if it belongs

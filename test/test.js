@@ -187,6 +187,10 @@ asyncTest("configDependencies can override config with systemConfig export", fun
 	makeIframe("ext_config/dev.html");
 });
 
+asyncTest("fallback to /dir/index on /dir 404", function(){
+	makeIframe("index_fallback/dev.html");
+});
+
 QUnit.module("npmDependencies");
 
 asyncTest("are used exclusively if npmIgnore is not provided", function(){
