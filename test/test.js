@@ -209,6 +209,10 @@ asyncTest("use paths configured, including wildcards, for modules when provided"
 	makeIframe("paths_config/dev.html");
 });
 
+asyncTest("scoped packages work", function(){
+	makeIframe("scoped/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
