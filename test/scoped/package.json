@@ -1,5 +1,5 @@
 {
-  "name": "scoped",
+  "name": "@scoped/package",
   "main": "main",
   "version": "1.0.0",
   "dependencies": {

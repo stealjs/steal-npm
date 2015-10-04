@@ -16,7 +16,7 @@
 	<script>
 
 		System.import("package.json!npm").then(function(){
-			System.import(System.main).then(function(main){
+			System.import("@scoped/package").then(function(main){
 				if(window.QUnit) {
 					QUnit.equal(main, "foobar");
 					removeMyself();
