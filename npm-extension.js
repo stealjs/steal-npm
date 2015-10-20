@@ -4,6 +4,14 @@ var utils = require("./npm-utils");
 exports.includeInBuild = true;
 
 exports.addExtension = function(System){
+	var isConditional = !System.has("@@conditional-helpers") ?
+		function() { return false; } :
+		(function(helpers){
+			return function(n){
+				return helpers.isConditionalModuleName(n);
+			}
+		})(System.get("@@conditional-helpers"));
+
 	/**
 	 * Normalize has to deal with a "tricky" situation.  There are module names like
 	 * "css" -> "css" normalize like normal
@@ -22,6 +30,12 @@ exports.addExtension = function(System){
 		// we can skip all of this logic.
 		if(parentName && utils.path.isRelative(name) &&
 		  !utils.moduleName.isNpm(parentName)) {
+			return oldNormalize.call(this, name, parentName, parentAddress);
+		}
+
+		// If this is a conditional module name skip it so the conditional extension
+		// does its work.
+		if(isConditional(name)) {
 			return oldNormalize.call(this, name, parentName, parentAddress);
 		}
 

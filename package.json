@@ -34,6 +34,7 @@
     "qunit": "~0.7.5",
     "steal": "^0.12.0-pre.0",
     "steal-builtins": "^1.0.0",
+    "steal-conditional": "^0.1.0",
     "steal-qunit": "bitovi/steal-qunit#master",
     "system-json": "0.0.2",
     "systemjs": "bitovi/systemjs#b664e4cd359c013acb3445627d1e1e1799424542",
