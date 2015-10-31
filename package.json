@@ -37,7 +37,7 @@
     "steal-qunit": "bitovi/steal-qunit#master",
     "system-json": "0.0.2",
     "systemjs": "bitovi/systemjs#b664e4cd359c013acb3445627d1e1e1799424542",
-    "testee": "^0.1.7",
+    "testee": "^0.2.2",
     "transpile": "bitovi/transpile#c2aeb23ad82b21fdf7f7da989bccbd6ad04e9f13"
   },
   "system": {

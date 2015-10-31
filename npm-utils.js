@@ -186,6 +186,9 @@ var utils = {
 			} else {
 				return parsedModuleName;
 			}
+		},
+		nameAndVersion: function(parsedModuleName){
+			return parsedModuleName.packageName + "@" + parsedModuleName.version;
 		}
 	},
 	pkg: {
@@ -350,6 +353,11 @@ var utils = {
 		depPackage: function (parentPackageAddress, childName){
 			var packageFolderName = parentPackageAddress.replace(/\/package\.json.*/,"");
 			return (packageFolderName ? packageFolderName+"/" : "")+"node_modules/" + childName + "/package.json";
+		},
+		peerPackage: function(parentPackageAddress, childName){
+			var packageFolderName = parentPackageAddress.replace(/\/package\.json.*/,"");
+			return packageFolderName.substr(0, packageFolderName.lastIndexOf("/"))
+				+ "/" + childName + "/package.json";
 		},
 		// returns the package directory one level deeper.
 		depPackageDir: function(parentPackageAddress, childName){
