@@ -149,7 +149,7 @@ var utils = {
 			
 			// we have the moduleName without the version
 			// we check this against various configs
-			var mapName = utils.moduleName.create(parsedModuleName),
+			var mapName = utils.path.removeJS(utils.moduleName.create(parsedModuleName)),
 			    mappedName;
 			
 			// The refPkg might have a browser [https://github.com/substack/node-browserify#browser-field] mapping.
@@ -321,8 +321,11 @@ var utils = {
 		startsWithDotSlash: function( path ) {
 			return path.substr(0,2) === "./";
 		},
+		endsWith: function (path, pattern) {
+			return path.indexOf(pattern, path.length - pattern.length) !== -1;
+		},
 		endsWithSlash: function(path){
-			return path[path.length -1] === "/";
+			return utils.path.endsWith(path, "/");
 		},
 		addEndingSlash: function(path){
 			return utils.path.endsWithSlash(path) ? path : path+"/";
