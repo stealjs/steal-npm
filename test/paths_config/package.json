@@ -1,6 +1,7 @@
 {
 	"name": "mod",
 	"main": "main",
+	"version": "1.0.0",
 	"dependencies": {
 		"can": "1.0.0"
 	},
