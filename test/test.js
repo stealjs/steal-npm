@@ -205,6 +205,10 @@ asyncTest("npmIgnore a single module works", function(){
 	makeIframe("npm_deps_ignore/dev.html");
 });
 
+asyncTest("use paths configured, including wildcards, for modules when provided", function(){
+	makeIframe("paths_config/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
