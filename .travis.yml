@@ -8,3 +8,4 @@ before_script:
   - npm install -g grunt-cli
   - node node_modules/bower/bin/bower install
 script: npm test
+sudo: false
