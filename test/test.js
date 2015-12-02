@@ -217,6 +217,10 @@ asyncTest("works with npm 3's flat file structure", function(){
 	makeIframe("npm3/dev.html");
 });
 
+asyncTest("works with child packages with version ranges", function(){
+	makeIframe("parent/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){
