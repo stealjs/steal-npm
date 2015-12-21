@@ -221,6 +221,10 @@ asyncTest("works with child packages with version ranges", function(){
 	makeIframe("parent/dev.html");
 });
 
+asyncTest("With npm3 traversal starts by going to the mosted nested position", function(){
+	makeIframe("nested_back/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){

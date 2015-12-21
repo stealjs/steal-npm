@@ -17,13 +17,7 @@
 		
 		System.import("package.json!npm").then(function(){
 			System.import(System.main).then(function(main){
-				if(window.QUnit) {
-					QUnit.equal(main, "object");
-					removeMyself();
-				} else {
-					console.log(main);
-				}
-				
+				// Tests are in the main.
 			}, function(e){
 				if(window.QUnit) {
 					QUnit.ok(false, e);
@@ -39,7 +33,7 @@
 			
 			
 		}).then(null, function(err){
-			console.error("Oh no, error!", err, err.stack);
+			console.error("Oh no, error!", err);
 		});
 	</script>
 </body>
