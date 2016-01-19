@@ -225,6 +225,10 @@ asyncTest("With npm3 traversal starts by going to the mosted nested position", f
 	makeIframe("nested_back/dev.html");
 });
 
+asyncTest("peerDependencies are matched against parent that has a matching version", function(){
+	makeIframe("peer_deps/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){

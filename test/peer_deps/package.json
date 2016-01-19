@@ -1,0 +1,17 @@
+{
+  "name": "rx-proj",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@cycle/core": "^6.0.0",
+    "@cycle/storage": "^2.0.3",
+    "rx": "^4.0.7",
+    "steal": "^0.13.1"
+  }
+}
