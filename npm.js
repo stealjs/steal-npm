@@ -262,6 +262,7 @@ var translateConfig = function(loader, packages){
 	if(!g.process) {
 		g.process = {
 			cwd: function(){},
+			browser: true,
 			env: {
 				NODE_ENV: loader.env
 			}
@@ -272,6 +273,8 @@ var translateConfig = function(loader, packages){
 		loader.npm = {};
 		loader.npmPaths = {};
 		loader.globalBrowser = {};
+		loader.npmFetchCache = {};
+		loader.npmNameCheck = {};
 	}
 	loader.npmPaths.__default = packages[0];
 	var lib = packages[0].system && packages[0].system.directories && packages[0].system.directories.lib;

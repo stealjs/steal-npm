@@ -39,6 +39,9 @@ var utils = {
 			fn.call(arr, arr[i], i);
 		}
 	},
+	isEnv: function(name) {
+		return this.isEnv ? this.isEnv(name) : this.env === name;
+	},
 	moduleName: {
 		/**
 		 * @function moduleName.create

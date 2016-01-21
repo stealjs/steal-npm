@@ -229,6 +229,10 @@ asyncTest("peerDependencies are matched against parent that has a matching versi
 	makeIframe("peer_deps/dev.html");
 });
 
+asyncTest("Able to load dependencies using /index convention", function(){
+	makeIframe("mocha/dev.html");
+});
+
 // Only run these tests for StealJS (because it requires steal syntax)
 if(window.steal) {
 	asyncTest("canjs", function(){

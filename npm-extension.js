@@ -30,6 +30,12 @@ exports.addExtension = function(System){
 			return oldNormalize.call(this, name, parentName, parentAddress, pluginNormalize);
 		}
 
+		// Check against contextual maps that would not be converted.
+		if(typeof this.map[parentName] === "object" &&
+		  this.map[parentName][name]) {
+			return oldNormalize.call(this, name, parentName, parentAddress, pluginNormalize);
+		}
+
 		// Get the current package
 		var refPkg = utils.pkg.findByModuleNameOrAddress(this, parentName, parentAddress);
 
@@ -62,8 +68,11 @@ exports.addExtension = function(System){
 			parsedModuleName.version = refPkg.version;
 			parsedModuleName.packageName = refPkg.name;
 			parsedModuleName.modulePath = utils.pkg.main(refPkg);
-			return oldNormalize.call(this, utils.moduleName.create(parsedModuleName),
-									 parentName, parentAddress, pluginNormalize);
+			return verifyModuleName(this,
+				oldNormalize.call(this,
+								  utils.moduleName.create(parsedModuleName),
+								  parentName, parentAddress, pluginNormalize)
+			);
 		}
 		if( depPkg ) {
 			parsedModuleName.version = depPkg.version;
@@ -77,8 +86,10 @@ exports.addExtension = function(System){
 			   typeof refPkg.system.map[moduleName] === "string") {
 				moduleName = refPkg.system.map[moduleName];
 			}
-			return oldNormalize.call(this, moduleName, parentName,
-									 parentAddress, pluginNormalize);
+			return verifyModuleName(this,
+				oldNormalize.call(this, moduleName, parentName,
+								  parentAddress, pluginNormalize)
+			);
 		} else {
 			if(depPkg === this.npmPaths.__default) {
 				// if the current package, we can't? have the
@@ -86,18 +97,60 @@ exports.addExtension = function(System){
 				var localName = parsedModuleName.modulePath ?
 					parsedModuleName.modulePath+(parsedModuleName.plugin? parsedModuleName.plugin: "") :
 					utils.pkg.main(depPkg);
-				return oldNormalize.call(this, localName, parentName,
-										 parentAddress, pluginNormalize);
+				return verifyModuleName(this,
+					oldNormalize.call(this, localName, parentName,
+									  parentAddress, pluginNormalize)
+				);
 			}
 			if(refPkg.browser && refPkg.browser[name]) {
-				return oldNormalize.call(this, refPkg.browser[name], parentName,
-										 parentAddress, pluginNormalize);
+				return verifyModuleName(this,
+					oldNormalize.call(this, refPkg.browser[name], parentName,
+									  parentAddress, pluginNormalize)
+				);
 			}
 			return oldNormalize.call(this, name, parentName, parentAddress,
 									 pluginNormalize);
 		}
-
 	};
+
+	var verifyModuleName = utils.isEnv.call(System, "production") ?
+		function(p) { return p; } :
+		function (loader, normalizePromise) {
+			return normalizePromise.then(function(name){
+				if(loader.has(name)) {
+					return name;
+				}
+				if(loader.npmNameCheck[name]) {
+					// return a promise that resolves to the correct name
+					return loader.npmNameCheck[name];
+				}
+
+				var load = { name: name, metadata: { dryRun: true } };
+
+				// Need to cache:
+				// * Source
+				// * Name verification
+				var p = loader.npmFetchCache[name] =
+					Promise.resolve(loader.locate(load))
+					.then(function(address){
+						load.address = address;
+						return loader.fetch(load);
+					}).then(function(source){
+						return source;
+					});
+
+				p = loader.npmNameCheck[name] = p.then(
+					function(){ return name },
+					function(err){
+						// 404, try with /index
+						// TODO save this somewhere for production?
+						// TODO save this for local storage
+						return name  + "/index";
+					});
+
+				return p;
+			});
+		};
 
 
 	var oldLocate = System.locate;
@@ -139,6 +192,15 @@ exports.addExtension = function(System){
 			}
 		}
 		return oldLocate.call(this, load);
+	};
+
+	var oldFetch = System.fetch;
+	System.fetch = function(load){
+		if(this.npmFetchCache[load.name] && !load.metadata.dryRun) {
+			return this.npmFetchCache[load.name];
+		}
+
+		return oldFetch.apply(this, arguments);
 	};
 
 	// Given a moduleName convert it into a npm-style moduleName if it belongs
