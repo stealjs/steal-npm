@@ -1,6 +1,7 @@
 "format cjs";
 
 var utils = require("./npm-utils");
+var npmLoad = require("./npm-load");
 exports.includeInBuild = true;
 
 var isNode = typeof process === "object" && {}.toString.call(process) ===
@@ -23,6 +24,10 @@ exports.addExtension = function(System){
 	 */
 	var oldNormalize = System.normalize;
 	System.normalize = function(name, parentName, parentAddress, pluginNormalize){
+		if(parentName && this.npmParentMap[parentName]) {
+			parentName = this.npmParentMap[parentName];
+		}
+
 		// If this is a relative module name and the parent is not an npm module
 		// we can skip all of this logic.
 		if(parentName && utils.path.isRelative(name) &&
@@ -68,11 +73,9 @@ exports.addExtension = function(System){
 			parsedModuleName.version = refPkg.version;
 			parsedModuleName.packageName = refPkg.name;
 			parsedModuleName.modulePath = utils.pkg.main(refPkg);
-			return verifyModuleName(this,
-				oldNormalize.call(this,
-								  utils.moduleName.create(parsedModuleName),
-								  parentName, parentAddress, pluginNormalize)
-			);
+			return oldNormalize.call(this,
+									 utils.moduleName.create(parsedModuleName),
+									 parentName, parentAddress, pluginNormalize);
 		}
 		if( depPkg ) {
 			parsedModuleName.version = depPkg.version;
@@ -86,10 +89,8 @@ exports.addExtension = function(System){
 			   typeof refPkg.system.map[moduleName] === "string") {
 				moduleName = refPkg.system.map[moduleName];
 			}
-			return verifyModuleName(this,
-				oldNormalize.call(this, moduleName, parentName,
-								  parentAddress, pluginNormalize)
-			);
+			return oldNormalize.call(this, moduleName, parentName,
+									 parentAddress, pluginNormalize);
 		} else {
 			if(depPkg === this.npmPaths.__default) {
 				// if the current package, we can't? have the
@@ -97,61 +98,17 @@ exports.addExtension = function(System){
 				var localName = parsedModuleName.modulePath ?
 					parsedModuleName.modulePath+(parsedModuleName.plugin? parsedModuleName.plugin: "") :
 					utils.pkg.main(depPkg);
-				return verifyModuleName(this,
-					oldNormalize.call(this, localName, parentName,
-									  parentAddress, pluginNormalize)
-				);
+				return oldNormalize.call(this, localName, parentName,
+										 parentAddress, pluginNormalize);
 			}
 			if(refPkg.browser && refPkg.browser[name]) {
-				return verifyModuleName(this,
-					oldNormalize.call(this, refPkg.browser[name], parentName,
-									  parentAddress, pluginNormalize)
-				);
+				return oldNormalize.call(this, refPkg.browser[name], parentName,
+										 parentAddress, pluginNormalize);
 			}
 			return oldNormalize.call(this, name, parentName, parentAddress,
 									 pluginNormalize);
 		}
 	};
-
-	var verifyModuleName = utils.isEnv.call(System, "production") ?
-		function(p) { return p; } :
-		function (loader, normalizePromise) {
-			return normalizePromise.then(function(name){
-				if(loader.has(name)) {
-					return name;
-				}
-				if(loader.npmNameCheck[name]) {
-					// return a promise that resolves to the correct name
-					return loader.npmNameCheck[name];
-				}
-
-				var load = { name: name, metadata: { dryRun: true } };
-
-				// Need to cache:
-				// * Source
-				// * Name verification
-				var p = loader.npmFetchCache[name] =
-					Promise.resolve(loader.locate(load))
-					.then(function(address){
-						load.address = address;
-						return loader.fetch(load);
-					}).then(function(source){
-						return source;
-					});
-
-				p = loader.npmNameCheck[name] = p.then(
-					function(){ return name },
-					function(err){
-						// 404, try with /index
-						// TODO save this somewhere for production?
-						// TODO save this for local storage
-						return name  + "/index";
-					});
-
-				return p;
-			});
-		};
-
 
 	var oldLocate = System.locate;
 	System.locate = function(load){
@@ -183,8 +140,13 @@ exports.addExtension = function(System){
 
 
 					if(parsedModuleName.modulePath) {
-						return utils.path.joinURIs( utils.path.addEndingSlash(root),
-							parsedModuleName.plugin ? parsedModuleName.modulePath : utils.path.addJS(parsedModuleName.modulePath) );
+						var npmAddress = utils.path.joinURIs(
+							utils.path.addEndingSlash(root),
+								parsedModuleName.plugin ?
+								parsedModuleName.modulePath :
+								utils.path.addJS(parsedModuleName.modulePath)
+						);
+						return npmAddress;
 					}
 
 					return address;
@@ -196,11 +158,31 @@ exports.addExtension = function(System){
 
 	var oldFetch = System.fetch;
 	System.fetch = function(load){
-		if(this.npmFetchCache[load.name] && !load.metadata.dryRun) {
-			return this.npmFetchCache[load.name];
+		if(load.metadata.dryRun) {
+			return oldFetch.apply(this, arguments);
 		}
 
-		return oldFetch.apply(this, arguments);
+		var loader = this;
+		return Promise.resolve(oldFetch.apply(this, arguments))
+			.then(null, function(){
+				var local = utils.extend({}, load);
+				local.name = load.name + "/index";
+				local.metadata = { dryRun: true };
+
+				return Promise.resolve(loader.locate(local))
+					.then(function(address){
+						local.address = address;
+						return loader.fetch(local);
+					})
+					.then(function(source){
+						load.address = local.address;
+						loader.npmParentMap[load.name] = local.name;
+						if(npmLoad) {
+							npmLoad.saveLoadIfNeeded(loader.npmContext);
+						}
+						return source;
+					});
+			});
 	};
 
 	// Given a moduleName convert it into a npm-style moduleName if it belongs

@@ -42,6 +42,12 @@ var utils = {
 	isEnv: function(name) {
 		return this.isEnv ? this.isEnv(name) : this.env === name;
 	},
+	savePackageJsonLoad: function(loader){
+		debugger;
+		if(loader.getModuleLoad) {
+			var load = loader.getModuleLoad("package.json!npm");
+		}
+	},
 	moduleName: {
 		/**
 		 * @function moduleName.create
