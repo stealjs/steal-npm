@@ -10,7 +10,7 @@
     "test": "npm run test:browser && npm run test:live-reload",
     "test:browser": "grunt test",
     "live-reload-test": "cd test/live-reload && live-reload-test",
-    "test:live-reload": "npm run live-reload-test & testee test/steal-live-reload.html --browsers firefox --rpoerter Spec"
+    "test:live-reload": "npm run live-reload-test & testee test/steal-live-reload.html --browsers firefox --reporter Spec"
   },
   "repository": {
     "type": "git",

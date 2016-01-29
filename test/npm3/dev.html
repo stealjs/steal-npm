@@ -20,7 +20,8 @@
 				// Tests are in the main.
 			}, function(e){
 				if(window.QUnit) {
-					QUnit.ok(false, e);
+					console.log(e, e.stack);
+					QUnit.ok(false, e.message);
 					removeMyself();
 				} else {
 					console.log(e);

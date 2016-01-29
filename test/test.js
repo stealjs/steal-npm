@@ -107,6 +107,9 @@ asyncTest("jquery-ui", function(){
 });
 
 asyncTest("import self", function(){
+	GlobalSystem.globalBrowser = {
+		"system-npm": "system-npm"
+	};
 	Promise.all([
 		GlobalSystem["import"]("system-npm"),
 		GlobalSystem["import"]("system-npm/test/meta")

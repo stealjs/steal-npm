@@ -1,7 +1,6 @@
 "format cjs";
 
 var utils = require("./npm-utils");
-var npmLoad = require("./npm-load");
 exports.includeInBuild = true;
 
 var isNode = typeof process === "object" && {}.toString.call(process) ===
@@ -28,37 +27,98 @@ exports.addExtension = function(System){
 			parentName = this.npmParentMap[parentName];
 		}
 
+		var hasNoParent = !parentName;
+		var nameIsRelative = utils.path.isRelative(name);
+		var parentIsNpmModule = utils.moduleName.isNpm(parentName);
+
 		// If this is a relative module name and the parent is not an npm module
 		// we can skip all of this logic.
-		if(parentName && utils.path.isRelative(name) &&
-		  !utils.moduleName.isNpm(parentName)) {
-			return oldNormalize.call(this, name, parentName, parentAddress, pluginNormalize);
+		if(parentName && nameIsRelative && !parentIsNpmModule) {
+			return oldNormalize.call(this, name, parentName, parentAddress,
+									 pluginNormalize);
 		}
 
 		// Check against contextual maps that would not be converted.
-		if(typeof this.map[parentName] === "object" &&
-		  this.map[parentName][name]) {
-			return oldNormalize.call(this, name, parentName, parentAddress, pluginNormalize);
+		var hasContextualMap = typeof this.map[parentName] === "object" &&
+		  this.map[parentName][name];
+		if(hasContextualMap) {
+			return oldNormalize.call(this, name, parentName, parentAddress,
+									 pluginNormalize);
 		}
 
 		// Get the current package
-		var refPkg = utils.pkg.findByModuleNameOrAddress(this, parentName, parentAddress);
+		var refPkg = utils.pkg.findByModuleNameOrAddress(this, parentName,
+														 parentAddress);
 
 		// this isn't in a package, so ignore
 		if(!refPkg) {
-			return oldNormalize.call(this, name, parentName, parentAddress, pluginNormalize);
+			return oldNormalize.call(this, name, parentName, parentAddress,
+									 pluginNormalize);
 		}
 
 		// Using the current package, get info about what it is probably asking for
-		var parsedModuleName = utils.moduleName.parseFromPackage(this, refPkg, name, parentName);
+		var parsedModuleName = utils.moduleName.parseFromPackage(this, refPkg,
+																 name, 
+																 parentName);
+
+		var isRoot = refPkg === this.npmPaths.__default;
+		var parsedPackageNameIsReferringPackage =
+			parsedModuleName.packageName === refPkg.name;
+
+		// Are we normalizing a module that is relative to another npm module?
+		var isRelativeToParentNpmModule =
+			parentIsNpmModule &&
+			nameIsRelative &&
+			parsedPackageNameIsReferringPackage;
+
 
 		// Look for the dependency package specified by the current package
-		var depPkg = utils.pkg.findDep(this, refPkg, parsedModuleName.packageName);
+		var depPkg, wantedPkg;
+
+		// If we are within the same package then refPkg is the package we care
+		// about
+		if(isRelativeToParentNpmModule) {
+			depPkg = refPkg;
+		}
+
+		var context = this.npmContext;
+		var crawl = context && context.crawl;
+		if(!depPkg) {
+			if(crawl && !isRoot) {
+				var parentPkg = nameIsRelative ? null :
+					crawl.matchedVersion(context, refPkg.name, 
+										 refPkg.version);
+				if(parentPkg) {
+					wantedPkg = crawl.getDependencyMap(this, parentPkg, isRoot)[parsedModuleName.packageName];
+					if(wantedPkg) {
+						var foundPkg = crawl.matchedVersion(this.npmContext,
+															wantedPkg.name,
+															wantedPkg.version);
+						if(foundPkg) {
+							depPkg = utils.pkg.findByUrl(this, foundPkg.fileUrl);
+						}
+					}
+				}
+			} else {
+
+			//if(!depPkg) {
+				depPkg = utils.pkg.findDep(this, refPkg, parsedModuleName.packageName);
+			}
+		}
 
 		// This really shouldn't happen, but lets find a package.
+		var lookupByName = parsedModuleName.isGlobal || hasNoParent ||
+			parsedPackageNameIsReferringPackage;
 		if (!depPkg) {
 			depPkg = utils.pkg.findByName(this, parsedModuleName.packageName);
 		}
+
+		var isThePackageWeWant = !crawl || !depPkg ||
+			(wantedPkg ? crawl.pkgSatisfies(depPkg, wantedPkg.version) : true);
+		if(!isThePackageWeWant) {
+			depPkg = undefined;
+		}
+
 		// It could be something like `fs` so check in globals
 		if(!depPkg) {
 			var browserPackageName = this.globalBrowser[parsedModuleName.packageName];
@@ -67,8 +127,9 @@ exports.addExtension = function(System){
 				depPkg = utils.pkg.findByName(this, parsedModuleName.packageName);
 			}
 		}
+
 		// It could be the root main.
-		if(!depPkg && refPkg === this.npmPaths.__default && name === refPkg.main &&
+		if(!depPkg && isRoot && name === refPkg.main &&
 		  utils.pkg.hasDirectoriesLib(refPkg)) {
 			parsedModuleName.version = refPkg.version;
 			parsedModuleName.packageName = refPkg.name;
@@ -77,7 +138,50 @@ exports.addExtension = function(System){
 									 utils.moduleName.create(parsedModuleName),
 									 parentName, parentAddress, pluginNormalize);
 		}
-		if( depPkg ) {
+
+		// TODO Here is where we should progressively load the package.json files.
+		var loader = this;
+		if(!depPkg) {
+			if(crawl) {
+				var parentPkg = crawl.matchedVersion(this.npmContext, refPkg.name,
+													 refPkg.version);
+				if(parentPkg) {
+					depPkg = crawl.getDependencyMap(this, parentPkg, isRoot)[parsedModuleName.packageName];
+				}
+			}
+
+			if(!depPkg) {
+				if(refPkg.browser && refPkg.browser[name]) {
+					return oldNormalize.call(this, refPkg.browser[name], parentName,
+											 parentAddress, pluginNormalize);
+				}
+				return oldNormalize.call(this, name, parentName, parentAddress,
+										 pluginNormalize);
+			}
+			return crawl.dep(this.npmContext, parentPkg, depPkg, isRoot)
+				.then(createModuleNameAndNormalize);
+		} else {
+			return createModuleNameAndNormalize(depPkg);
+		}
+
+		function createModuleNameAndNormalize(depPkg){
+			parsedModuleName.version = depPkg.version;
+			// add the main path
+			if(!parsedModuleName.modulePath) {
+				parsedModuleName.modulePath = utils.pkg.main(depPkg);
+			}
+			var moduleName = utils.moduleName.create(parsedModuleName);
+			// Apply mappings, if they exist in the refPkg
+			if(refPkg.system && refPkg.system.map &&
+			   typeof refPkg.system.map[moduleName] === "string") {
+				moduleName = refPkg.system.map[moduleName];
+			}
+			return oldNormalize.call(loader, moduleName, parentName,
+									 parentAddress, pluginNormalize);
+
+		}
+
+		if(depPkg) {
 			parsedModuleName.version = depPkg.version;
 			// add the main path
 			if(!parsedModuleName.modulePath) {
@@ -112,7 +216,6 @@ exports.addExtension = function(System){
 
 	var oldLocate = System.locate;
 	System.locate = function(load){
-
 		var parsedModuleName = utils.moduleName.parse(load.name),
 			loader = this;
 		// @ is not the first character
@@ -137,7 +240,6 @@ exports.addExtension = function(System){
 
 
 					var root = utils.pkg.rootDir(pkg, pkg === loader.npmPaths.__default);
-
 
 					if(parsedModuleName.modulePath) {
 						var npmAddress = utils.path.joinURIs(
@@ -177,6 +279,8 @@ exports.addExtension = function(System){
 					.then(function(source){
 						load.address = local.address;
 						loader.npmParentMap[load.name] = local.name;
+						var npmLoad = loader.npmContext && 
+							loader.npmContext.npmLoad;
 						if(npmLoad) {
 							npmLoad.saveLoadIfNeeded(loader.npmContext);
 						}

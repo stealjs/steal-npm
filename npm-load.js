@@ -2,7 +2,15 @@
 
 var convert = require("./npm-convert");
 var utils = require("./npm-utils");
+var isNode = typeof process === "object" &&
+	{}.toString.call(process) === "[object process]";
 
+/**
+ * @function saveLoad
+ * @param {Context} context
+ *
+ * Creates the `package.json!npm` load's source and saves it in the load cache.
+ */
 exports.saveLoad = function(context){
 	var loader = context.loader;
 	if(loader.getModuleLoad) {
@@ -12,6 +20,20 @@ exports.saveLoad = function(context){
 	}
 };
 
+exports.saveLoadIfNeeded = function(context){
+	// Only do the actual saving in the build
+	var loader = context.loader;
+	if(isNode && loader.isEnv && !loader.isEnv("production")) {
+		exports.saveLoad(context);
+	}
+};
+
+/**
+ * @function makeSource
+ * @param {Context} context
+ * @param {Package} pkg The root package.json
+ * @return {String} The source representation of the `package.json!npm` module.
+ */
 exports.makeSource = function(context, pkg){
 	pkg = pkg || context.loader.npmPaths.__default;
 	var configDependencies = ["@loader","npm-extension","module"].concat(
@@ -32,14 +54,12 @@ exports.makeSource = function(context, pkg){
 	"});";
 };
 
-exports.saveLoadIfNeeded = function(context){
-	// Only do the actual saving in the build
-	var loader = context.loader;
-	if(true || loader.isEnv && loader.isEnv("build")) {
-		exports.saveLoad(context);
-	}
-};
-
+/**
+ * @function saveLoad
+ * @param {Context} context
+ * @param {Package} pkg The root package.json
+ * @return {Array<String>} An array of configDependencies
+ */
 exports.configDeps = function(context, pkg){
 	var deps = [];
 	if(pkg.system && pkg.system.configDependencies) {
@@ -51,6 +71,12 @@ exports.configDeps = function(context, pkg){
 	return deps;
 };
 
+/**
+ * @function pkgMain
+ * @param {Context} context
+ * @param {Package} pkg The root package.json
+ * @return {String} The main module for the app
+ */
 exports.pkgMain = function(context, pkg){
 	var pkgMain = utils.pkg.main(pkg);
 	// Convert the main if using directories.lib
@@ -65,7 +91,11 @@ exports.pkgMain = function(context, pkg){
 	return pkgMain;
 };
 
-// grab bag of options needed in prod
+/**
+ * @function options
+ * @param {Context} context
+ * @return {Object} Options passed into the translated config.
+ */
 exports.options = function(context){
 	return {
 		npmParentMap: context.loader.npmParentMap
@@ -122,6 +152,8 @@ var translateConfig = function(loader, packages, options){
 					// Remove state created by the config.
 					delete loader.npm;
 					delete loader.npmPaths;
+					delete loader.npmParentMap;
+					delete loader.npmContext;
 				});
 			});
 		}
@@ -160,5 +192,3 @@ var translateConfig = function(loader, packages, options){
 	});
 	setupLiveReload();
 };
-
-exports.includeInBuild = false;

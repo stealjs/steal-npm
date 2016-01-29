@@ -33,7 +33,11 @@ exports.translate = function(load){
 		loader: this,
 		// places we
 		paths: {},
-		versions: {}
+		versions: {},
+		fetchCache: {},
+		deferredConversions: {},
+		npmLoad: npmLoad,
+		crawl: crawl
 	};
 	this.npmContext = context;
 	var pkg = {origFileUrl: load.address, fileUrl: load.address};
@@ -56,9 +60,9 @@ exports.translate = function(load){
 					version: pkg.version,
 					fileUrl: pkg.fileUrl,
 					main: pkg.main,
-					system: convert.system(context, pkg, pkg.system, index === 0 ),
-					globalBrowser: convert.browser( pkg, pkg.globalBrowser ),
-					browser: convert.browser( pkg,  pkg.browser )
+					system: convert.system(context, pkg, pkg.system, index === 0),
+					globalBrowser: convert.browser(pkg, pkg.globalBrowser),
+					browser: convert.browser(pkg,  pkg.browser)
 				});
 				packages[pkg.name+"@"+pkg.version] = true;
 			}

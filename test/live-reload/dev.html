@@ -50,7 +50,9 @@
 						}
 						return doReset();
 					}, doReset).then(function(){
-						QUnit.start();
+						if(window.QUnit) {
+							QUnit.start();
+						}
 					});
 				});
 			});

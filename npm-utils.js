@@ -8,11 +8,25 @@
 
 // A regex to test if a moduleName is npm-like.
 var npmModuleRegEx = /.+@.+\..+\..+#.+/;
+var slice = Array.prototype.slice;
 
 var utils = {
-	extend: function(d, s){
+	extend: function(d, s, deep){
+		var val;
 		for(var prop in s) {
-			d[prop] = s[prop];
+			val = s[prop];
+
+			if(deep) {
+				if(utils.isArray(val)) {
+					d[prop] = slice.call(val);
+				} else if(utils.isObject(val)) {
+					d[prop] = utils.extend({}, val, deep);
+				} else {
+					d[prop] = s[prop];
+				}
+			} else {
+				d[prop] = s[prop];
+			}
 		}
 		return d;
 	},
@@ -38,6 +52,12 @@ var utils = {
 		for(; i < len; i++) {
 			fn.call(arr, arr[i], i);
 		}
+	},
+	isObject: function(obj){
+		return typeof obj === "object";
+	},
+	isArray: Array.isArray || function(arr){
+		return Object.prototype.toString.call(arr) === "[object Array]";
 	},
 	isEnv: function(name) {
 		return this.isEnv ? this.isEnv(name) : this.env === name;
@@ -81,6 +101,16 @@ var utils = {
 			return npmModuleRegEx.test(moduleName);
 		},
 		/**
+		 * @function moduleName.isFullyConvertedModuleName
+		 * Determines whether a moduleName is a fully npm name, not npm-like
+		 * With a parsed module name we can make sure there is a package name,
+		 * package version, and module path.
+		 */
+		isFullyConvertedNpm: function(parsedModuleName){
+			return !!(parsedModuleName.packageName &&
+					  parsedModuleName.version && parsedModuleName.modulePath);
+		},
+		/**
 		 * @function moduleName.isScoped
 		 * Determines whether a moduleName is from a scoped package.
 		 * @return {Boolean}
@@ -96,7 +126,7 @@ var utils = {
 		 *
 		 * @return {system-npm/parsed_npm}
 		 */
-		parse: function (moduleName, currentPackageName) {
+		parse: function (moduleName, currentPackageName, global) {
 			var pluginParts = moduleName.split('!');
 			var modulePathParts = pluginParts[0].split("#");
 			var versionParts = modulePathParts[0].split("@");
@@ -140,7 +170,8 @@ var utils = {
 				version: versionParts[1],
 				modulePath: modulePath,
 				packageName: packageName,
-				moduleName: moduleName
+				moduleName: moduleName,
+				isGlobal: global
 			};
 		},
 		/**
@@ -191,7 +222,7 @@ var utils = {
 			}
 
 			if(mappedName) {
-				return utils.moduleName.parse(mappedName, packageName);
+				return utils.moduleName.parse(mappedName, packageName, !!global);
 			} else {
 				return parsedModuleName;
 			}
@@ -296,6 +327,12 @@ var utils = {
 		findByName: function(loader, name) {
 			if(loader.npm && !utils.path.startsWithDotSlash(name)) {
 				return loader.npm[name];
+			}
+		},
+		findByUrl: function(loader, url) {
+			if(loader.npm) {
+				url = utils.pkg.folderAddress(url);
+				return loader.npmPaths[url];
 			}
 		},
 		hasDirectoriesLib: function(pkg) {
