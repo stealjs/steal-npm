@@ -2,8 +2,6 @@
 
 var convert = require("./npm-convert");
 var utils = require("./npm-utils");
-var isNode = typeof process === "object" &&
-	{}.toString.call(process) === "[object process]";
 
 /**
  * @function saveLoad
@@ -23,7 +21,7 @@ exports.saveLoad = function(context){
 exports.saveLoadIfNeeded = function(context){
 	// Only do the actual saving in the build
 	var loader = context.loader;
-	if(isNode && loader.isEnv && !loader.isEnv("production")) {
+	if(context.resavePackageInfo) {
 		exports.saveLoad(context);
 	}
 };

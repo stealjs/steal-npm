@@ -5,6 +5,8 @@ var utils = require('./npm-utils');
 var convert = require("./npm-convert");
 var crawl = require('./npm-crawl');
 var npmLoad = require("./npm-load");
+var isNode = typeof process === "object" &&
+	{}.toString.call(process) === "[object process]";
 
 // Add @loader, for SystemJS
 if(!System.has("@loader")) {
@@ -23,6 +25,9 @@ if(!System.has("@loader")) {
 exports.translate = function(load){
 	var loader = this;
 
+	var resavePackageInfo = isNode && loader.isEnv &&
+		!loader.isEnv("production");
+
 	// This could be an empty string if the fetch failed.
 	if(load.source == "") {
 		return "define([]);";
@@ -37,7 +42,8 @@ exports.translate = function(load){
 		fetchCache: {},
 		deferredConversions: {},
 		npmLoad: npmLoad,
-		crawl: crawl
+		crawl: crawl,
+		resavePackageInfo: resavePackageInfo
 	};
 	this.npmContext = context;
 	var pkg = {origFileUrl: load.address, fileUrl: load.address};

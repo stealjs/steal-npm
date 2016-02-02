@@ -344,6 +344,18 @@ var utils = {
 		hasDirectoriesLib: function(pkg) {
 			var system = pkg.system;
 			return system && system.directories && !!system.directories.lib;
+		},
+		findPackageInfo: function(context, pkg){
+			var pkgInfo = context.pkgInfo;
+			if(pkgInfo) {
+				var out;
+				utils.forEach(pkgInfo, function(p){
+					if(pkg.name === p.name && pkg.version === p.version) {
+						out = p;
+					}
+				});
+				return out;
+			}
 		}
 	},
 	path: {

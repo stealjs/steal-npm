@@ -56,7 +56,18 @@ function convertSystem(context, pkg, system, root, ignoreWaiting) {
 	// Push the waiting conversions down.
 	if(ignoreWaiting !== true && waiting.length) {
 		convertLater(context, waiting, function(){
-			var config = convertSystem(context, pkg, copy, root, true);
+			var local = utils.extend({}, copy, true);
+			var config = convertSystem(context, pkg, local, root, true);
+
+			// If we are building we need to resave the package's system
+			// configuration so that it will be written out into the build.
+			if(context.resavePackageInfo) {
+				var info = utils.pkg.findPackageInfo(context, pkg);
+				info.system = config;
+			}
+
+			delete config.main;
+			delete config.transpiler;
 			context.loader.config(config);
 		});
 	}
