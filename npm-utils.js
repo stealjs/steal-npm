@@ -191,10 +191,16 @@ var utils = {
 		parseFromPackage: function(loader, refPkg, name, parentName) {
 			// Get the name of the
 			var packageName = utils.pkg.name(refPkg),
-			    parsedModuleName = utils.moduleName.parse(name, packageName);
+			    parsedModuleName = utils.moduleName.parse(name, packageName),
+				isRelative = utils.path.isRelative(parsedModuleName.modulePath);
+
+			if(isRelative && !parentName) {
+				throw new Error("Cannot resolve a relative module identifier " +
+								"with no parent module:", name);
+			}
 
 			// If the module needs to be loaded relative.
-			if( utils.path.isRelative( parsedModuleName.modulePath ) ) {
+			if(isRelative) {
 				// get the location of the parent
 				var parentParsed = utils.moduleName.parse( parentName, packageName );
 				// If the parentModule and the currentModule are from the same parent
