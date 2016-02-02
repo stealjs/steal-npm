@@ -10,7 +10,7 @@
     "test": "npm run test:browser && npm run test:live-reload",
     "test:browser": "grunt test",
     "live-reload-test": "cd test/live-reload && live-reload-test",
-    "test:live-reload": "npm run live-reload-test & testee test/steal-live-reload.html --browsers firefox --rpoerter Spec"
+    "test:live-reload": "npm run live-reload-test & testee test/steal-live-reload.html --browsers firefox --reporter Spec"
   },
   "repository": {
     "type": "git",
@@ -32,7 +32,7 @@
     "live-reload-testing": "^3.0.1",
     "lodash": "~2.4.1",
     "qunit": "~0.7.5",
-    "steal": "^0.12.0-pre.0",
+    "steal": "^0.13.0",
     "steal-builtins": "^1.0.0",
     "steal-qunit": "bitovi/steal-qunit#master",
     "system-json": "0.0.2",

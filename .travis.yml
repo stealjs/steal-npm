@@ -9,3 +9,5 @@ before_script:
   - node node_modules/bower/bin/bower install
 script: npm test
 sudo: false
+addons:
+  firefox: "43.0"

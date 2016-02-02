@@ -107,6 +107,9 @@ asyncTest("jquery-ui", function(){
 });
 
 asyncTest("import self", function(){
+	GlobalSystem.globalBrowser = {
+		"system-npm": "system-npm"
+	};
 	Promise.all([
 		GlobalSystem["import"]("system-npm"),
 		GlobalSystem["import"]("system-npm/test/meta")
@@ -227,6 +230,10 @@ asyncTest("With npm3 traversal starts by going to the mosted nested position", f
 
 asyncTest("peerDependencies are matched against parent that has a matching version", function(){
 	makeIframe("peer_deps/dev.html");
+});
+
+asyncTest("Able to load dependencies using /index convention", function(){
+	makeIframe("mocha/dev.html");
 });
 
 // Only run these tests for StealJS (because it requires steal syntax)
