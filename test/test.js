@@ -130,6 +130,18 @@ asyncTest("modules using process.env", function(){
 	}).then(start);
 });
 
+asyncTest("Reuse existing npmContext.pkgInfo", function(){
+	GlobalSystem.npmContext.pkgInfo = [{
+		name: "reuse-test", version: "1.0.0",
+		fileUrl: GlobalSystem.baseURL
+	}];
+	GlobalSystem["delete"]("package.json!npm");
+	GlobalSystem["import"]("package.json!npm").then(function(){
+		var first = GlobalSystem.npmContext.pkgInfo[0];
+		equal(first.name, "reuse-test", "package was reused");
+	}).then(start);
+});
+
 asyncTest("module names", function(){
 	makeIframe("not_relative_main/dev.html");
 });
