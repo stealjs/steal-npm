@@ -107,6 +107,9 @@ asyncTest("jquery-ui", function(){
 });
 
 asyncTest("import self", function(){
+	GlobalSystem.globalBrowser = {
+		"system-npm": "system-npm"
+	};
 	Promise.all([
 		GlobalSystem["import"]("system-npm"),
 		GlobalSystem["import"]("system-npm/test/meta")
@@ -124,6 +127,19 @@ asyncTest("modules using process.env", function(){
 		return GlobalSystem["import"]("test/env");
 	}).then(function(env){
 		equal(env, "development", "loaded the env");
+	}).then(start);
+});
+
+asyncTest("Reuse existing npmContext.pkgInfo", function(){
+	GlobalSystem.npmContext.pkgInfo = [{
+		name: "reuse-test", version: "1.0.0",
+		fileUrl: GlobalSystem.baseURL
+	}];
+	GlobalSystem["delete"]("package.json!npm");
+	GlobalSystem["import"]("package.json!npm").then(function(){
+		var pkgInfo = GlobalSystem.npmContext.pkgInfo;
+		var pkg = pkgInfo[pkgInfo.length - 1];
+		equal(pkg.name, "reuse-test", "package was reused");
 	}).then(start);
 });
 
@@ -227,6 +243,10 @@ asyncTest("With npm3 traversal starts by going to the mosted nested position", f
 
 asyncTest("peerDependencies are matched against parent that has a matching version", function(){
 	makeIframe("peer_deps/dev.html");
+});
+
+asyncTest("Able to load dependencies using /index convention", function(){
+	makeIframe("folder_index/dev.html");
 });
 
 // Only run these tests for StealJS (because it requires steal syntax)

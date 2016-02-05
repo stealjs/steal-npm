@@ -9,19 +9,23 @@
 		window.removeMyself = window.parent.removeMyself;
 	</script>
 
-	<script src="../../node_modules/systemjs/node_modules/es6-module-loader/dist/es6-module-loader.js"></script>
-	<script src="../../node_modules/systemjs/dist/system.js"></script>
-	<script src="../../node_modules/system-json/json.js"></script>
+	<script src="../../node_modules/steal/steal.js" config-main="@empty"
+		main="@empty" base-url="./"></script>
 	<script src="../system_test_config.js"></script>
 	<script>
-		
 		System.import("package.json!npm").then(function(){
-			System.import(System.main).then(function(main){
-				// Tests are in the main.
+			System.import("main").then(function(mod){
+				if(window.QUnit) {
+					QUnit.equal(typeof mod, "object", "module was fetched successfully");
+					QUnit.equal(mod.name, "folder", "correct name");
+					QUnit.equal(mod.other, "other", "got other module");
+					removeMyself();
+				} else {
+					console.log("Got module", mod);
+				}
 			}, function(e){
 				if(window.QUnit) {
-					console.log(e, e.stack);
-					QUnit.ok(false, e.message);
+					QUnit.ok(false, e);
 					removeMyself();
 				} else {
 					console.log(e);
