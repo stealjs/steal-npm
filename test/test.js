@@ -137,8 +137,9 @@ asyncTest("Reuse existing npmContext.pkgInfo", function(){
 	}];
 	GlobalSystem["delete"]("package.json!npm");
 	GlobalSystem["import"]("package.json!npm").then(function(){
-		var first = GlobalSystem.npmContext.pkgInfo[0];
-		equal(first.name, "reuse-test", "package was reused");
+		var pkgInfo = GlobalSystem.npmContext.pkgInfo;
+		var pkg = pkgInfo[pkgInfo.length - 1];
+		equal(pkg.name, "reuse-test", "package was reused");
 	}).then(start);
 });
 
