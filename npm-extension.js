@@ -239,7 +239,8 @@ exports.addExtension = function(System){
 					}
 
 
-					var root = utils.pkg.rootDir(pkg, pkg === loader.npmPaths.__default);
+					var isRoot = JSON.stringify(pkg) === JSON.stringify(loader.npmPaths.__default);
+					var root = utils.pkg.rootDir(pkg, isRoot);
 
 					if(parsedModuleName.modulePath) {
 						var npmAddress = utils.path.joinURIs(
