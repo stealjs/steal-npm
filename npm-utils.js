@@ -459,6 +459,10 @@ var utils = {
 			if(nodeModulesIndex >= 0) {
 				return nextSlash>=0 ? address.substr(0, nextSlash) : address;
 			}
+		},
+		basename: function(address){
+			var parts = address.split("/");
+			return parts[parts.length - 1];
 		}
 	},
 	includeInBuild: true
