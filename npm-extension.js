@@ -267,25 +267,37 @@ exports.addExtension = function(System){
 		var loader = this;
 		return Promise.resolve(oldFetch.apply(this, arguments))
 			.then(null, function(){
-				var local = utils.extend({}, load);
-				local.name = load.name + "/index";
-				local.metadata = { dryRun: true };
+				return tryWith("/index").then(null, function(err){
+					if(utils.moduleName.isNpm(load.name) &&
+					   utils.path.basename(load.address) === "package.js") {
+						// This is package.js, try as package.json
+						return tryWith(".json");
+					}
+					throw err;
+				});
 
-				return Promise.resolve(loader.locate(local))
-					.then(function(address){
-						local.address = address;
-						return loader.fetch(local);
-					})
-					.then(function(source){
-						load.address = local.address;
-						loader.npmParentMap[load.name] = local.name;
-						var npmLoad = loader.npmContext && 
-							loader.npmContext.npmLoad;
-						if(npmLoad) {
-							npmLoad.saveLoadIfNeeded(loader.npmContext);
-						}
-						return source;
-					});
+				function tryWith(addedPart){
+					var local = utils.extend({}, load);
+					local.name = load.name + addedPart;
+					local.metadata = { dryRun: true };
+
+					return Promise.resolve(loader.locate(local))
+						.then(function(address){
+							local.address = address;
+							return loader.fetch(local);
+						})
+						.then(function(source){
+							load.address = local.address;
+							loader.npmParentMap[load.name] = local.name;
+							var npmLoad = loader.npmContext && 
+								loader.npmContext.npmLoad;
+							if(npmLoad) {
+								npmLoad.saveLoadIfNeeded(loader.npmContext);
+							}
+							return source;
+						});
+
+				}
 			});
 	};
 
