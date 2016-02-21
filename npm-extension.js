@@ -9,6 +9,9 @@ var isWorker = typeof WorkerGlobalScope !== "undefined" && (self instanceof Work
 var isBrowser = typeof window !== "undefined" && !isNode && !isWorker;
 
 exports.addExtension = function(System){
+	if (System._extensions) {
+		System._extensions.push(exports.addExtension);
+	}
 	/**
 	 * Normalize has to deal with a "tricky" situation.  There are module names like
 	 * "css" -> "css" normalize like normal
