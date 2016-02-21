@@ -470,7 +470,16 @@ var utils = {
 			return parts[parts.length - 1];
 		}
 	},
-	includeInBuild: true
+	includeInBuild: true,
+	/**
+	 * @function isRoot
+	 * Determines whether a module is the loader's root module.
+	 * @return {Boolean}
+	 */
+	isRoot: function(loader, pkg) {
+		return pkg.name === loader.npmPaths.__default.name &&
+			pkg.version === loader.npmPaths.__default.version;
+	}
 };
 
 

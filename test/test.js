@@ -81,7 +81,6 @@ asyncTest("Loads globals", function(){
 
 
 asyncTest("meta", function(){
-
 	GlobalSystem["import"]("test/meta").then(function(meta){
 		equal(meta,"123", "got 123");
 	}).then(start);
@@ -141,6 +140,25 @@ asyncTest("Reuse existing npmContext.pkgInfo", function(){
 		var pkg = pkgInfo[pkgInfo.length - 1];
 		equal(pkg.name, "reuse-test", "package was reused");
 	}).then(start);
+});
+
+asyncTest("Support cloned loader", function(){
+	var origDefault = GlobalSystem.npmPaths.__default;
+	GlobalSystem.npmPaths.__default = {
+		fileUrl: origDefault.fileUrl,
+		main: origDefault.main,
+		name: origDefault.name,
+		version: origDefault.version
+	};
+
+	GlobalSystem.normalize(origDefault.name)
+	.then(function(normalizedName) {
+		return GlobalSystem.locate({ name: normalizedName });
+	})
+	.then(function(path) {
+		ok(path);
+	})
+	.then(start);
 });
 
 asyncTest("module names", function(){
