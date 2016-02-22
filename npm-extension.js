@@ -296,6 +296,10 @@ exports.addExtension = function(System){
 								loader.npmContext.npmLoad;
 							if(npmLoad) {
 								npmLoad.saveLoadIfNeeded(loader.npmContext);
+								utils.warnOnce("Some 404s were encountered " +
+											   "while loading. Don't panic! " +
+											   "These will only happen in dev " +
+											   "and are harmless.");
 							}
 							return source;
 						});
