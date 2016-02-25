@@ -5,7 +5,7 @@ module.exports = function(grunt){
 		copy: {
 			toSteal: {
 				files: [
-					{ expand: true, src: ['npm*'], dist: 'node_modules/steal/ext/', filter: 'isFile'}
+					{ expand: true, src: ['npm*'], dest: 'node_modules/steal/ext/', filter: 'isFile'}
 				]
 			}
 		},
