@@ -201,6 +201,10 @@ asyncTest("browser config to ignore a module", function(){
 	makeIframe("browser-false/dev.html");
 });
 
+asyncTest("browser load module node-like", function(){
+	makeIframe("browser-node-like/dev.html");
+});
+
 asyncTest("configDependencies combined from loader and pkg.system", function(){
 	makeIframe("config_deps/dev.html");
 });
