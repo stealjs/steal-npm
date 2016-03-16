@@ -37,6 +37,7 @@
     "steal-builtins": "^1.0.0",
     "steal-qunit": "^0.1.1",
     "system-json": "0.0.2",
+    "es6-module-loader": "~0.11.1",
     "systemjs": "stealjs/systemjs#b664e4cd359c013acb3445627d1e1e1799424542",
     "transpile": "stealjs/transpile#c2aeb23ad82b21fdf7f7da989bccbd6ad04e9f13"
   },
