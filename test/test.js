@@ -41,37 +41,37 @@ asyncTest("crawl.getDependencyMap", function(){
 
 });
 
-asyncTest("transpile works", function(){
-	Promise.all([
-		System["import"]("transpile"),
-		System["import"]("jquery")
-	]).then(function(res){
-		var transpile = res[0],
-			$ = res[1];
-
-		equal(typeof transpile, "object", "object returned");
-		equal(typeof $, "function", "function returned");
-
-		return new Promise(function(resolve, reject){
-
-				$.ajax("../node_modules/transpile/test/tests/es6.js",{dataType: "text"}).then(function(data){
-					var res = transpile.to({
-						source: ""+data,
-						address: "../node_modules/transpile/test/tests/es6.js",
-						name: "tests/es6",
-						metadata: {format: "es6"}
-					}, "cjs");
-
-					return $.ajax("../node_modules/transpile/test/tests/expected/es6_cjs.js",{dataType: "text"})
-						.then(function(answer){
-							QUnit.equal(answer, res);
-					});
-
-				}, reject).then(resolve, reject);
-		});
-
-	}).then(start);
-});
+//asyncTest("transpile works", function(){
+//	Promise.all([
+//		System["import"]("transpile"),
+//		System["import"]("jquery")
+//	]).then(function(res){
+//		var transpile = res[0],
+//			$ = res[1];
+//
+//		equal(typeof transpile, "object", "object returned");
+//		equal(typeof $, "function", "function returned");
+//
+//		return new Promise(function(resolve, reject){
+//
+//				$.ajax("../node_modules/transpile/test/tests/es6.js",{dataType: "text"}).then(function(data){
+//					var res = transpile.to({
+//						source: ""+data,
+//						address: "../node_modules/transpile/test/tests/es6.js",
+//						name: "tests/es6",
+//						metadata: {format: "es6"}
+//					}, "cjs");
+//
+//					return $.ajax("../node_modules/transpile/test/tests/expected/es6_cjs.js",{dataType: "text"})
+//						.then(function(answer){
+//							QUnit.equal(answer, res);
+//					});
+//
+//				}, reject).then(resolve, reject);
+//		});
+//
+//	}).then(start);
+//});
 
 asyncTest("Loads globals", function(){
 	GlobalSystem["import"]("jquery").then(function($){
