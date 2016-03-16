@@ -9,30 +9,21 @@
 		window.removeMyself = window.parent.removeMyself;
 	</script>
 
-	<script src="../../node_modules/es6-module-loader/dist/es6-module-loader.js"></script>
-	<script src="../../node_modules/systemjs/dist/system.js"></script>
+	<script src="../../node_modules/steal-es6-module-loader/dist/es6-module-loader.js"></script>
+	<script src="../../node_modules/steal-systemjs/dist/system.js"></script>
 	<script src="../../node_modules/system-json/json.js"></script>
 	<script src="../system_test_config.js"></script>
 	<script>
-
-		var fourOhFours = 0;
-		(function(){
-			var fetch = System.fetch;
-			System.fetch = function(load){
-				return fetch.apply(this, arguments)
-					.catch(function(err){
-						fourOhFours++;
-						throw err;
-					});
-			};
-		})();
 		
 		System.import("package.json!npm").then(function(){
-			System.import(System.main).then(function(){
+			System.import(System.main).then(function(main){
 				if(window.QUnit) {
-					QUnit.equal(fourOhFours, 0, "there were no 404s");
+					QUnit.equal(main, "browser", "index.js loaded");
 					removeMyself();
+				} else {
+					console.log(main);
 				}
+				
 			}, function(e){
 				if(window.QUnit) {
 					QUnit.ok(false, e);
@@ -48,7 +39,7 @@
 			
 			
 		}).then(null, function(err){
-			console.error("Oh no, error!", err);
+			console.error("Oh no, error!", err, err.stack);
 		});
 	</script>
 </body>

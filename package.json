@@ -32,15 +32,17 @@
     "live-reload-testing": "^4.0.0",
     "lodash": "~2.4.1",
     "qunit": "~0.7.5",
+    "testee": "^0.2.2",
     "steal": "^0.14.0",
     "steal-builtins": "^1.0.0",
-    "steal-qunit": "bitovi/steal-qunit#master",
+    "steal-qunit": "^0.1.1",
     "system-json": "0.0.2",
-    "systemjs": "bitovi/systemjs#b664e4cd359c013acb3445627d1e1e1799424542",
-    "testee": "^0.2.2",
-    "transpile": "bitovi/transpile#c2aeb23ad82b21fdf7f7da989bccbd6ad04e9f13"
+    "es6-module-loader": "~0.11.1",
+    "systemjs": "stealjs/systemjs#b664e4cd359c013acb3445627d1e1e1799424542",
+    "transpile": "stealjs/transpile#c2aeb23ad82b21fdf7f7da989bccbd6ad04e9f13"
   },
   "system": {
+    "npmAlgorithm": "flat",
     "npmIgnore": [
       "bower",
       "grunt",
