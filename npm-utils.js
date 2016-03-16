@@ -257,7 +257,7 @@ var utils = {
 		main: function(pkg) {
 			return  utils.path.removeJS( 
 				(pkg.system && pkg.system.main) 
-				|| (typeof pkg.browser === "string" && (utils.path.endsWithSlash(pkg.browser) ? pkg.browser+'index.js' : pkg.browser) )
+				|| (typeof pkg.browser === "string" && (utils.path.endsWithSlash(pkg.browser) ? pkg.browser+'index' : pkg.browser) )
 				|| (typeof pkg.jspm === "string" && pkg.jspm) 
 				|| (typeof pkg.jspm === "object" && pkg.jspm.main) 
 				|| pkg.main || 'index' ) ;
