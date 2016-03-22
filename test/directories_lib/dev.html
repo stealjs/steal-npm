@@ -9,14 +9,13 @@
 		window.removeMyself = window.parent.removeMyself;
 	</script>
 
-	<script src="../../node_modules/systemjs/node_modules/es6-module-loader/dist/es6-module-loader.js"></script>
-	<script src="../../node_modules/systemjs/dist/system.js"></script>
-	<script src="../../node_modules/system-json/json.js"></script>
+	<script src="../../node_modules/steal/steal.js"
+		config-main="@empty" base-url="./"></script>
 	<script src="../system_test_config.js"></script>
 	<script>
 		
 		System.import("package.json!npm").then(function(){
-			
+
 			// package name works
 			var packageName = System.import("directories_lib").then(function(main){
 				if(window.QUnit) {
@@ -41,6 +40,8 @@
 					QUnit.equal(test.foo.name, "foo");
 					QUnit.equal(test.directories_lib.util.name, "util");
 					QUnit.equal(test.other, "bar");
+				} else {
+					console.log(test);
 				}
 			});
 
