@@ -17,10 +17,10 @@
 		System.import("package.json!npm").then(function(){
 			System.import(System.main).then(function(main){
 				if(window.QUnit) {
-					QUnit.equal(main(), "fake");
+					QUnit.equal(main, "browser", "index.js loaded");
 					removeMyself();
 				} else {
-					console.log(main());
+					console.log(main);
 				}
 				
 			}, function(e){
@@ -38,7 +38,7 @@
 			
 			
 		}).then(null, function(err){
-			console.error("Oh no, error!", err);
+			console.error("Oh no, error!", err, err.stack);
 		});
 	</script>
 </body>
