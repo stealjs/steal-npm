@@ -2,36 +2,15 @@
 
 [![Build Status](https://travis-ci.org/stealjs/system-npm.svg?branch=master)](https://travis-ci.org/stealjs/system-npm)
 
-This is a plugin for [SystemJS](https://github.com/systemjs/systemjs) and 
-[StealJS](http://stealjs.com/) that makes it easy to work with [npm](https://www.npmjs.com/).
+This is a plugin for [StealJS](http://stealjs.com/) that makes it easy to work with [npm](https://www.npmjs.com/).
 
-The idea is to reduce the amount of manual configuring needed when using SystemJS/StealJS
+The idea is to reduce the amount of manual configuring needed when using StealJS
 and instead leverage the metadata included in `package.json` to have the configuration
 done for you.
 
 ## Install
 
 If you're using StealJS you don't have have to install this plugin, it's included by default.
-
-If you're using SystemJS install this as another npm dependency:
-
-```js
-npm install system-npm --save-dev
-```
-
-## Use
-
-### SystemJS
-
-Configure SystemJS to load **system-npm** and then use the plugin to load your `package.json` file.
-See the [demo folder](https://github.com/stealjs/system-npm/tree/master/demo/systemjs) for
-an example app with SystemJS.
-
-```js
-System.import("package.json!npm").then(function() {
-  // Configurations set, you can start importing stuff
-});
-```
 
 ## Configuration
 

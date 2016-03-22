@@ -1,7 +1,6 @@
 QUnit.module("system-npm plugin");
 var GlobalSystem = window.System;
 
-
 var makeIframe = function(src){
 	var iframe = document.createElement('iframe');
 	window.removeMyself = function(){
@@ -267,24 +266,21 @@ asyncTest("Able to load dependencies using /index convention", function(){
 	makeIframe("folder_index/dev.html");
 });
 
-// Only run these tests for StealJS (because it requires steal syntax)
-if(window.steal) {
-	asyncTest("canjs", function(){
-		Promise.all([
-			GlobalSystem["import"]("can"),
-			GlobalSystem["import"]("can/control/control")
-		]).then(function(mods){
-			var can = mods[0],
-				Control = mods[1];
-			ok(Control.extend, "Control has an extend method");
-			ok(can.Control.extend, "control");
-		}).then(start);
+asyncTest("canjs", function(){
+	Promise.all([
+		GlobalSystem["import"]("can"),
+		GlobalSystem["import"]("can/control/control")
+	]).then(function(mods){
+		var can = mods[0],
+			Control = mods[1];
+		ok(Control.extend, "Control has an extend method");
+		ok(can.Control.extend, "control");
+	}).then(start);
 
-	});
+});
 
-	asyncTest("load in a webworker", function(){
-		makeIframe("worker/dev.html");
-	});
-}
+asyncTest("load in a webworker", function(){
+	makeIframe("worker/dev.html");
+});
 
 QUnit.start();
