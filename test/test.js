@@ -1,5 +1,6 @@
-QUnit.module("system-npm plugin");
 var GlobalSystem = window.System;
+
+require("./normalize_test");
 
 var makeIframe = function(src){
 	var iframe = document.createElement('iframe');
@@ -11,6 +12,8 @@ var makeIframe = function(src){
 	document.body.appendChild(iframe);
 	iframe.src = src;
 };
+
+QUnit.module("system-npm plugin");
 
 asyncTest("utils.moduleName.create and utils.moduleName.parse", function(){
 	GlobalSystem['import']("npm-utils")
