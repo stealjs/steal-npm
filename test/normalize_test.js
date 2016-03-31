@@ -59,3 +59,41 @@ QUnit.test("a package with .js in the name", function(assert){
 	.then(done, done);
 });
 
+QUnit.test("normalizes a package with peer deps", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "parent",
+			main: "main.js",
+			version: "1.0.0",
+			dependencies: {
+				dep: "1.0.0",
+				peer: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "dep",
+				main: "main.js",
+				version: "1.0.0",
+				peerDependencies: {
+					peer: "1.0.0"
+				}
+			},
+			{
+				name: "peer",
+				main: "main.js",
+				version: "1.0.0"
+			}
+		]).loader;
+
+		// Delete this so it has to be fetched
+		delete loader.npm.peer;
+
+		loader.normalize("peer", "dep@1.0.0#main")
+		.then(function(name){
+			assert.equal(name, "peer@1.0.0#main", "normalized peer");
+		})
+		.then(done, done);
+});
