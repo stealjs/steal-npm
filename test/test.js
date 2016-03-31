@@ -1,5 +1,6 @@
 var GlobalSystem = window.System;
 
+require("./crawl_test");
 require("./normalize_test");
 
 var makeIframe = function(src){

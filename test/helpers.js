@@ -5,9 +5,22 @@ function Runner(System){
 }
 
 Runner.prototype.clone = function(){
-	var loader = this.loader = this.BaseSystem.clone();
+	var System = this.BaseSystem;
+	var loader = this.loader = System.clone();
 	loader.npm = {};
 	loader.npmPaths = {};
+	loader.globalBrowser = {};
+	var loadMod = System.get("npm-load");
+	var crawlMod = System.get("npm-crawl");
+	loader.npmContext = {
+		loader: loader,
+		fetchCache: {},
+		deferredConversions: {},
+		versions: {},
+		npmLoad: getDefault(loadMod),
+		crawl: getDefault(crawlMod),
+		paths: {}
+	};
 
 	this.rootPackage({
 		name: "npm-test",
@@ -36,10 +49,19 @@ Runner.prototype.withPackages = function(packages){
 
 	var loader = this.loader;
 	var npm = loader.npm;
+	var context = loader.npmContext;
 	deps.forEach(function(package){
 		var pkg = package.pkg;
+		// This is wrong
+		pkg.fileUrl = "./node_modules/" + pkg.name;
 		npm[pkg.name] = pkg;
 		npm[pkg.name+"@"+pkg.version] = pkg;
+
+		var versions = context.versions;
+		var v = versions[pkg.name] = versions[pkg.name] || {};
+		v[pkg.version] = pkg;
+
+		context.paths[pkg.fileUrl + "/package.json"] = pkg;
 	});
 
 	return this;
@@ -60,10 +82,18 @@ Package.prototype.deps = function(deps){
 	return this;
 };
 
+function getDefault(module){
+	return module.__useDefault ? module["default"] : module;
+}
+
 module.exports = function(System){
 	return {
 		clone: function(){
 			return new Runner(System).clone();
+		},
+		Package: Package,
+		package: function(pkg){
+			return new Package(pkg);
 		}
 	};
 };
