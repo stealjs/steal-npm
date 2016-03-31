@@ -9,10 +9,6 @@ QUnit.test("Returns the correct dependencies for " +
 	 "name": "angular2",
 	 "version": "2.0.0-beta.12",
 	 "fileUrl": "./node_modules/angular2/package.json",
-	 "dependencies": {},
-	 "devDependencies": {},
-	 "directories": {},
-	 "optionalDependencies": {},
 	 "peerDependencies": {
 	  "es6-shim": "^0.35.0",
 	  "reflect-metadata": "0.1.2",
