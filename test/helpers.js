@@ -5,6 +5,7 @@ function Runner(System){
 }
 
 Runner.prototype.clone = function(){
+	var runner = this;
 	var System = this.BaseSystem;
 	var loader = this.loader = System.clone();
 	loader.npm = {};
@@ -19,7 +20,23 @@ Runner.prototype.clone = function(){
 		versions: {},
 		npmLoad: getDefault(loadMod),
 		crawl: getDefault(crawlMod),
+		packages: [],
+		pkgInfo: [],
 		paths: {}
+	};
+
+	// Keep a copy of each package.json in this scope
+	this.packagePaths = {};
+
+	// Override loader.fetch and return packages that are part of this loader
+	var fetch = loader.fetch;
+	loader.fetch = function(load){
+		var pkg = runner.packagePaths[load.address];
+		if(pkg) {
+			var json = JSON.stringify(pkg);
+			return Promise.resolve(json);
+		}
+		return fetch.call(this, load);
 	};
 
 	this.rootPackage({
@@ -41,19 +58,38 @@ Runner.prototype.rootPackage = function(pkg){
 	return this;
 };
 
+/**
+ * Add packages to the cloned loader. Packages can either be preloaded or not
+ * by default they are. This function will add all of the appropriate config
+ * to the loader for each scenario.
+ */
 Runner.prototype.withPackages = function(packages){
 	// Do something to initialize these packages
 	var deps = this.deps = packages.map(function(pkg){
 		return (pkg instanceof Package) ? pkg : new Package(pkg);
 	});
 
+	var runner = this;
 	var loader = this.loader;
 	var npm = loader.npm;
 	var context = loader.npmContext;
 	deps.forEach(function(package){
+		addPackage(package);
+	});
+
+	function addPackage(package, parentPackage){
+		// If this is an unloaded package
+		if(!package.loaded) {
+			return addUnloadedPackage(package, parentPackage);
+		}
+
 		var pkg = package.pkg;
-		// This is wrong
-		pkg.fileUrl = "./node_modules/" + pkg.name;
+		if(parentPackage) {
+			pkg.fileUrl = parentPackage.pkg.fileUrl + "/node_modules/" + pkg.name;
+		} else {
+			pkg.fileUrl = "./node_modules/" + pkg.name;
+		}
+
 		npm[pkg.name] = pkg;
 		npm[pkg.name+"@"+pkg.version] = pkg;
 
@@ -61,8 +97,26 @@ Runner.prototype.withPackages = function(packages){
 		var v = versions[pkg.name] = versions[pkg.name] || {};
 		v[pkg.version] = pkg;
 
-		context.paths[pkg.fileUrl + "/package.json"] = pkg;
-	});
+		var pkgUrl = pkg.fileUrl + "/package.json";
+		runner.packagePaths[pkgUrl] = context.paths[pkgUrl] = pkg;
+
+		package.forEachDeps(function(childPackage){
+			addPackage(childPackage, package);
+		});
+	}
+
+	function addUnloadedPackage(package, parentPackage){
+		var pkg = package.pkg;
+
+		if(parentPackage) {
+			pkg.fileUrl = parentPackage.pkg.fileUrl + "/node_modules/" + pkg.name;
+		} else {
+			pkg.fileUrl = "./node_modules/" + pkg.name;
+		}
+
+		var pkgUrl = pkg.fileUrl + "/package.json";
+		runner.packagePaths[pkgUrl] = pkg;
+	}
 
 	return this;
 };
@@ -72,14 +126,32 @@ Runner.prototype.withConfig = function(cfg){
 	return this;
 };
 
-function Package(pkg){
+Runner.prototype.npmVersion = function(version){
+	this.loader.npmContext.isFlatFileStructure = version >= 3;
+	return this;
+};
+
+function Package(pkg, loaded){
 	this.pkg = pkg;
-	this.deps = [];
+	this._deps = [];
+	this.loaded = loaded !== false;
+	this._unloadedDeps = [];
 }
 
+Package.toPackage = function(pkg){
+	return (pkg instanceof Package) ? pkg : new Package(pkg)
+};
+
 Package.prototype.deps = function(deps){
-	this.deps = deps;
+	this._deps = this._deps.concat(deps.map(Package.toPackage));
 	return this;
+};
+
+Package.prototype.forEachDeps = function(callback){
+	var deps = this._deps;
+	for(var i = 0, len = deps.length; i < len; i++) {
+		callback(deps[i]);
+	}
 };
 
 function getDefault(module){
