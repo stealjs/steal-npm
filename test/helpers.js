@@ -108,10 +108,10 @@ Runner.prototype.withPackages = function(packages){
 	function addUnloadedPackage(package, parentPackage){
 		var pkg = package.pkg;
 
-		if(parentPackage) {
+		pkg.fileUrl = "./node_modules/" + pkg.name;
+
+		if(parentPackage && runner.packagePaths[pkg.fileUrl]) {
 			pkg.fileUrl = parentPackage.pkg.fileUrl + "/node_modules/" + pkg.name;
-		} else {
-			pkg.fileUrl = "./node_modules/" + pkg.name;
 		}
 
 		var pkgUrl = pkg.fileUrl + "/package.json";
