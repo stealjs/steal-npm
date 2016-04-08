@@ -1,4 +1,5 @@
 bower_components/
 node_modules/**
 test/live-reload/node_modules/
+test/conditionals/node_modules/steal-conditional
 npm-debug.log
