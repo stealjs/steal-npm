@@ -1,5 +1,6 @@
 var GlobalSystem = window.System;
 
+require("./utils_test");
 require("./crawl_test");
 require("./normalize_test");
 
@@ -22,14 +23,13 @@ asyncTest("utils.moduleName.create and utils.moduleName.parse", function(){
 			var parsed = utils.moduleName.parse("abc/foo/def","bar");
 			equal(parsed.modulePath, "foo/def", "is absolute");
 
-			var parsed = utils.moduleName.parse("abc#./foo/def","bar");
+			parsed = utils.moduleName.parse("abc#./foo/def","bar");
 			equal(parsed.modulePath, "./foo/def", "is relative");
 
 			var res = utils.moduleName.create(parsed);
 			equal(res,"abc#foo/def", "set back to absolute");
 
 		}).then(QUnit.start);
-
 });
 
 asyncTest("crawl.getDependencyMap", function(){
@@ -289,6 +289,10 @@ asyncTest("canjs", function(){
 
 asyncTest("load in a webworker", function(){
 	makeIframe("worker/dev.html");
+});
+
+asyncTest("works with steal-conditional", function() {
+	makeIframe("conditionals/index.html");
 });
 
 QUnit.start();

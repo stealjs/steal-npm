@@ -38,6 +38,7 @@
     "qunitjs": "^1.22.0",
     "steal": "^0.14.0",
     "steal-builtins": "^1.0.0",
+    "steal-conditional": "^0.1.2",
     "steal-qunit": "^0.1.1",
     "testee": "^0.2.2",
     "transpile": "stealjs/transpile#c2aeb23ad82b21fdf7f7da989bccbd6ad04e9f13"
