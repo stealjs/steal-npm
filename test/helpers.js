@@ -1,3 +1,6 @@
+var crawl = require("npm-crawl");
+var convert = require("npm-convert");
+var utils = require("npm-utils");
 
 function Runner(System){
 	this.BaseSystem = System;
@@ -8,22 +11,32 @@ Runner.prototype.clone = function(){
 	var runner = this;
 	var System = this.BaseSystem;
 	var loader = this.loader = System.clone();
-	loader.npm = {};
-	loader.npmPaths = {};
-	loader.globalBrowser = {};
-	var loadMod = System.get("npm-load");
-	var crawlMod = System.get("npm-crawl");
-	loader.npmContext = {
-		loader: loader,
-		fetchCache: {},
-		deferredConversions: {},
-		versions: {},
-		npmLoad: getDefault(loadMod),
-		crawl: getDefault(crawlMod),
-		packages: [],
-		pkgInfo: [],
-		paths: {}
-	};
+	loader.set("@loader", loader.newModule({
+		__useDefault: true,
+		"default": loader
+	}));
+
+	var allow = {};
+	utils.forEach([
+		"package.json",
+		"package.json!npm",
+		"npm",
+		"npm-convert",
+		"npm-crawl",
+		"npm-load",
+		"npm-extension",
+		"npm-utils",
+		"semver",
+		"@loader"
+	], function(name){
+		allow[name] = true;
+	});
+
+	this.rootPackage({
+		name: "npm-test",
+		main: "main.js",
+		version: "1.0.0"
+	});
 
 	// Keep a copy of each package.json in this scope
 	this.packagePaths = {};
@@ -36,25 +49,40 @@ Runner.prototype.clone = function(){
 			var json = JSON.stringify(pkg);
 			return Promise.resolve(json);
 		}
-		return fetch.call(this, load);
+		if(load.name === "package.json!npm") {
+			var source = JSON.stringify(runner.root);
+			return Promise.resolve(source);
+
+		}
+		if(allow[load.name]) {
+			var source = System.getModuleLoad(load.name).source;
+			return Promise.resolve(source);
+		}
+		return Promise.reject();
 	};
 
-	this.rootPackage({
-		name: "npm-test",
-		main: "main.js",
-		version: "1.0.0"
-	})
+	var normalize = loader.normalize;
+	loader.normalize = function(name){
+		var loader = this, args = arguments;
+		return normalize.apply(this, arguments)
+			.then(function(name){
+				if(allow[name]) {
+					return name;
+				}
+
+				return loader.import("package.json!npm")
+				.then(function(){
+					return normalize.apply(loader, args);
+				});
+			});
+	};
 
 	return this;
 };
 
 Runner.prototype.rootPackage = function(pkg){
-	var loader = this.loader;
-	var fileUrl = pkg.fileUrl = ".";
-
-	loader.npmPaths.__default = pkg;
-	loader.npmPaths[fileUrl] = pkg;
-
+	this.root = pkg;
+	this._addVersion();
 	return this;
 };
 
@@ -70,52 +98,25 @@ Runner.prototype.withPackages = function(packages){
 	});
 
 	var runner = this;
-	var loader = this.loader;
-	var npm = loader.npm;
-	var context = loader.npmContext;
 	deps.forEach(function(package){
 		addPackage(package);
 	});
 
-	function addPackage(package, parentPackage){
-		// If this is an unloaded package
-		if(!package.loaded) {
-			return addUnloadedPackage(package, parentPackage);
-		}
-
+	function addPackage(package, parentPackage, parentFileUrl){
 		var pkg = package.pkg;
-		if(parentPackage) {
-			pkg.fileUrl = parentPackage.pkg.fileUrl + "/node_modules/" + pkg.name;
-		} else {
-			pkg.fileUrl = "./node_modules/" + pkg.name;
+
+		var fileUrl = "./node_modules/" + pkg.name;
+
+		if(parentPackage && runner.packagePaths[fileUrl]) {
+			fileUrl = parentFileUrl + "/node_modules/" + pkg.name;
 		}
 
-		npm[pkg.name] = pkg;
-		npm[pkg.name+"@"+pkg.version] = pkg;
-
-		var versions = context.versions;
-		var v = versions[pkg.name] = versions[pkg.name] || {};
-		v[pkg.version] = pkg;
-
-		var pkgUrl = pkg.fileUrl + "/package.json";
-		runner.packagePaths[pkgUrl] = context.paths[pkgUrl] = pkg;
+		var pkgUrl = fileUrl + "/package.json";
+		runner.packagePaths[pkgUrl] = pkg;
 
 		package.forEachDeps(function(childPackage){
-			addPackage(childPackage, package);
+			addPackage(childPackage, package, fileUrl);
 		});
-	}
-
-	function addUnloadedPackage(package, parentPackage){
-		var pkg = package.pkg;
-
-		pkg.fileUrl = "./node_modules/" + pkg.name;
-
-		if(parentPackage && runner.packagePaths[pkg.fileUrl]) {
-			pkg.fileUrl = parentPackage.pkg.fileUrl + "/node_modules/" + pkg.name;
-		}
-
-		var pkgUrl = pkg.fileUrl + "/package.json";
-		runner.packagePaths[pkgUrl] = pkg;
 	}
 
 	return this;
@@ -127,15 +128,23 @@ Runner.prototype.withConfig = function(cfg){
 };
 
 Runner.prototype.npmVersion = function(version){
-	this.loader.npmContext.isFlatFileStructure = version >= 3;
+	this.algorithm = version >= 3 ? "flat": undefined;
+	this._addVersion();
 	return this;
 };
 
-function Package(pkg, loaded){
+Runner.prototype._addVersion = function(){
+	var root = this.root;
+	var algo = this.algorithm;
+	if(algo) {
+		var system = root.system = root.system || {};
+		system.npmAlgorithm = algo;
+	}
+};
+
+function Package(pkg){
 	this.pkg = pkg;
 	this._deps = [];
-	this.loaded = loaded !== false;
-	this._unloadedDeps = [];
 }
 
 Package.toPackage = function(pkg){
@@ -153,10 +162,6 @@ Package.prototype.forEachDeps = function(callback){
 		callback(deps[i]);
 	}
 };
-
-function getDefault(module){
-	return module.__useDefault ? module["default"] : module;
-}
 
 module.exports = function(System){
 	return {
