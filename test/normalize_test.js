@@ -19,7 +19,10 @@ QUnit.test("normalizes child package names", function(assert){
 		.rootPackage({
 			name: "parent",
 			main: "main.js",
-			version: "1.0.0"
+			version: "1.0.0",
+			dependencies: {
+				child: "1.0.0"
+			}
 		})
 		.withPackages([
 			{
@@ -43,7 +46,10 @@ QUnit.test("a package with .js in the name", function(assert){
 		.rootPackage({
 			name: "parent",
 			main: "main.js",
-			version: "1.0.0"
+			version: "1.0.0",
+			dependencies: {
+				"foo.js": "0.0.1"
+			}
 		})
 		.withPackages([
 			{
@@ -89,9 +95,6 @@ QUnit.test("normalizes a package with peer deps", function(assert){
 			}
 		]).loader;
 
-		// Delete this so it has to be fetched
-		delete loader.npm.peer;
-
 		loader.normalize("peer", "dep@1.0.0#main")
 		.then(function(name){
 			assert.equal(name, "peer@1.0.0#main", "normalized peer");
@@ -122,11 +125,11 @@ QUnit.test("Can load two separate versions of same package", function(assert){
 					"set": "^5.0.0"
 				}
 			},
-			new Package({
+			{
 				name: "set",
 				main: "main.js",
 				version: "5.0.4"
-			}, false),
+			},
 			new Package({
 				name: "fixture",
 				main: "main.js",
@@ -135,11 +138,11 @@ QUnit.test("Can load two separate versions of same package", function(assert){
 					"set": "^3.0.0"
 				}
 			}).deps([
-				new Package({
+				{
 					name: "set",
 					main: "main.js",
 					version: "3.0.4"
-				}, false)
+				}
 			])
 		])
 		.loader;
@@ -226,10 +229,10 @@ Object.keys(mainVariations).forEach(function(testName){
 						"deep": "1.0.0"
 					}
 				}).deps([
-					new Package(deepPackageJSON, false)
+					deepPackageJSON
 				])
 			])
-			.loader
+			.loader;
 
 		loader.normalize("deep", "child@1.0.0#main")
 		.then(function(name){
