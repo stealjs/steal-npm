@@ -5,6 +5,7 @@ var utils = require("npm-utils");
 function Runner(System){
 	this.BaseSystem = System;
 	this.deps = [];
+	this.sources = {};
 }
 
 Runner.prototype.clone = function(){
@@ -56,6 +57,10 @@ Runner.prototype.clone = function(){
 		}
 		if(allow[load.name]) {
 			var source = System.getModuleLoad(load.name).source;
+			return Promise.resolve(source);
+		}
+		if(runner.sources[load.name]) {
+			var source = runner.sources[load.name];
 			return Promise.resolve(source);
 		}
 		return Promise.reject();
@@ -119,6 +124,11 @@ Runner.prototype.withPackages = function(packages){
 		});
 	}
 
+	return this;
+};
+
+Runner.prototype.withModule = function(moduleName, src){
+	this.sources[moduleName] = src;
 	return this;
 };
 
