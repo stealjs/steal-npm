@@ -157,16 +157,6 @@ QUnit.test("Can load two separate versions of same package", function(assert){
 QUnit.module("normalizing with main config");
 
 var mainVariations = {
-	"jspm.main": function(pkg){
-		pkg.jspm = {
-			main: "bar"
-		};
-	},
-
-	"jspm string": function(pkg){
-		pkg.jspm = "bar";
-	},
-
 	"system.main": function(pkg){
 		pkg.system = {
 			main: "bar"

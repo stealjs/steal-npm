@@ -205,10 +205,6 @@ asyncTest("browser config to ignore a module", function(){
 	makeIframe("browser-false/dev.html");
 });
 
-asyncTest("jspm config pointing to an alt main", function(){
-	makeIframe("jspm/dev.html");
-});
-
 asyncTest("configDependencies combined from loader and pkg.system", function(){
 	makeIframe("config_deps/dev.html");
 });

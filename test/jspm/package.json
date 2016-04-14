@@ -1,8 +1,0 @@
-{
-  "name": "jspm-config",
-  "main": "main",
-  "version": "1.0.0",
-  "jspm": {
-    "main": "jspm-main"
-  }
-}
