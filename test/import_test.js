@@ -72,5 +72,51 @@ QUnit.test("Specifies a different main", function(assert){
 		assert.equal(app, "bar", "loaded the app");
 	})
 	.then(done, done);
-
 });
+
+QUnit.module("Importing packages with /index convention");
+
+QUnit.test("Retries with /index", function(assert){
+	var done = assert.async();
+
+	var appModule = "module.exports = { worked: true };";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0"
+		})
+		.withModule("app@1.0.0#foo/index", appModule)
+		.loader;
+
+	loader["import"]("app/foo")
+	.then(function(mod){
+		assert.ok(mod.worked, "it loaded the index variant");
+	})
+	.then(done, done);
+});
+
+QUnit.test("Doesn't retry non-npm module names", function(assert){
+	var done = assert.async();
+
+	var appModule = "module.exports = { worked: true };";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0"
+		})
+		.withModule("node_modules/foo/package.json/index", "module.exports={}")
+		.loader;
+
+	var retried = false;
+
+	loader["import"]("node_modules/foo/package.json")
+	.then(null, function(err){
+		assert.ok(err, "Got an error, didn't retry");
+	})
+	.then(done, done);
+});
+
