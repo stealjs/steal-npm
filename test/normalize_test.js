@@ -154,6 +154,70 @@ QUnit.test("Can load two separate versions of same package", function(assert){
 	.then(done, done);
 });
 
+QUnit.test("When applying late-bound config, only applies config related to the new package", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.npmVersion(3)
+		.rootPackage({
+			name: "parent",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				dep: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "dep",
+				version: "1.0.0",
+				main: "main.js",
+				dependencies: {
+					other: "1.0.0"
+				},
+				system: {
+					map: {
+						"dep/child": "@empty",
+						"other": "other/other"
+					}
+				}
+			},
+			{
+				name: "other",
+				main: "main.js",
+				version: "1.0.0"
+			}
+		])
+		.loader;
+
+	loader.normalize("dep/child", "parent@1.0.0#main")
+	.then(function(name){
+		assert.equal(name, "@empty", "Map was applied");
+
+		// reset the map so that it is back to being the original value.
+		loader.config({
+			map: {
+				"dep/child": "dep/child"
+			}
+		});
+
+		return loader.normalize("dep/child", "parent@1.0.0#main");
+	})
+	.then(function(name){
+		assert.equal(name, "dep@1.0.0#child", "Config reset the value");
+
+		// Now load `other` which will cause `dep`'s config to be re-applied.
+		return loader.normalize("other", "dep@1.0.0#main").then(function(){
+			// And re-normalize child again
+			return loader.normalize("dep/child", "parent@1.0.0#main");
+		});
+	})
+	.then(function(name){
+		assert.equal(name, "dep@1.0.0#child", "The name hasn't changed");
+	})
+	.then(done, done);
+});
+
 QUnit.module("normalizing with main config");
 
 var mainVariations = {
