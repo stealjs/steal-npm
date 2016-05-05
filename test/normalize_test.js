@@ -154,6 +154,53 @@ QUnit.test("Can load two separate versions of same package", function(assert){
 	.then(done, done);
 });
 
+QUnit.test("Loads npm convention of folder with trailing slash", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				dep: "1.0.0"
+			}
+		})
+		.withPackages([{
+			name: "dep",
+			version: "1.0.0",
+			main: "main.js"
+		}])
+		.loader;
+
+	// Relative to a nested module
+	loader.normalize("./", "dep@1.0.0#folder/deep/mod")
+	.then(function(name){
+		// Relative to current folder uses index
+		assert.equal(name, "dep@1.0.0#folder/deep/index");
+
+		// Loading the parent
+		return loader.normalize("../", "dep@1.0.0#folder/deep/mod");
+	})
+	.then(function(name){
+		// Relative to the parent folder uses index
+		assert.equal(name, "dep@1.0.0#folder/index");
+
+		// Loading to the parent-most folder of the package
+		return loader.normalize("../", "dep@1.0.0#folder/mod");
+	})
+	.then(function(name){
+		// Relative to parent-most is the pkg.main
+		assert.equal(name, "dep@1.0.0#main");
+
+		return loader.normalize("./", "dep@1.0.0#thing");
+	})
+	.then(function(name){
+		assert.equal(name, "dep@1.0.0#main");
+	})
+	.then(done, done);
+});
+
 QUnit.module("normalizing with main config");
 
 var mainVariations = {
