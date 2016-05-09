@@ -63,7 +63,8 @@ Runner.prototype.clone = function(){
 			var source = runner.sources[load.name];
 			return Promise.resolve(source);
 		}
-		return Promise.reject();
+		var error = new Error("Unable to find: " + load.name);
+		return Promise.reject(error);
 	};
 
 	var normalize = loader.normalize;

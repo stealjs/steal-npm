@@ -120,3 +120,59 @@ QUnit.test("Doesn't retry non-npm module names", function(assert){
 	.then(done, done);
 });
 
+QUnit.module("Importing globalBrowser config");
+
+QUnit.test("Correctly imports globalBrowser package that is depended on by another", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.npmVersion(3)
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				"dep": "1.0.0",
+				"steal-builtins": "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "steal-builtins",
+				main: "main.js",
+				version: "1.0.0",
+				globalBrowser: {
+					"readline": "./thing",
+					"http": "http"
+				},
+				dependencies: {
+					"http": "~0.0.0"
+				}
+			},
+			{
+				name: "dep",
+				version: "1.0.0",
+				main: "main.js"
+			},
+			{
+				name: "http",
+				version: "0.10.0",
+				main: "main.js"
+			}
+		])
+		.withModule("http@0.10.0#main", "module.exports = 'http';")
+		.withModule("steal-builtins@1.0.0#thing", "module.exports = require('http');")
+		.withModule("dep@1.0.0#main", "module.exports = require('readline');")
+		.withModule("app@1.0.0#main", "module.exports = require('dep');")
+		.loader;
+
+	
+	loader["import"]("app")
+		.then(function(val){
+			assert.equal(val, "http", "correctly got the http module");
+		})
+		.then(done, function(err){
+			assert.ok(!err, err.stack || err);
+		});
+});
+
