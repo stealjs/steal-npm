@@ -113,7 +113,7 @@ Runner.prototype.withPackages = function(packages){
 
 		var fileUrl = "./node_modules/" + pkg.name;
 
-		if(parentPackage && runner.packagePaths[fileUrl]) {
+		if(parentPackage && runner.packagePaths[fileUrl + "/package.json"]) {
 			fileUrl = parentFileUrl + "/node_modules/" + pkg.name;
 		}
 
