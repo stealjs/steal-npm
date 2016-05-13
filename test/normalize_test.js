@@ -154,6 +154,54 @@ QUnit.test("Can load two separate versions of same package", function(assert){
 	.then(done, done);
 });
 
+QUnit.test("Configures a package when conflicting package.jsons are progressively loaded", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.npmVersion(3)
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				"steal-focha": "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "focha",
+				version: "1.0.0",
+				main: "main.js"
+			},
+			new Package({
+				name: "steal-focha",
+				version: "1.0.0",
+				main: "main.js",
+				dependencies: {
+					"focha": "^2.0.0"
+				},
+				system: {
+					map: {
+						focha: "focha#./other"
+					}
+				}
+			}).deps([
+				{
+					name: "focha",
+					version: "2.0.0",
+					main: "main.js"
+				}
+			])
+		])
+		.loader;
+
+	loader.normalize("focha", "steal-focha@1.0.0#main")
+	.then(function(name){
+		assert.equal(name, "focha@2.0.0#other", "config applied");
+	})
+	.then(done, done);
+});
+
 QUnit.test("Loads npm convention of folder with trailing slash", function(assert){
 	var done = assert.async();
 
