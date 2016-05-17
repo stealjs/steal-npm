@@ -24,6 +24,29 @@ QUnit.test("process.cwd()", function(assert){
 	.then(done, done);
 });
 
+QUnit.test("Allows a relative main", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "./relative.js",
+			version: "1.0.0"
+		})
+		.withModule("relative", "module.exports = 'worked'")
+		.loader;
+	
+	loader["import"]("package.json!npm")
+	.then(function(){
+		return loader["import"](loader.main);
+	})
+	.then(function(app){
+		assert.equal(app, "worked", "it loaded correctly");
+	})
+	.then(null,function(err) { console.log(err); })
+	.then(done, done);
+});
+
 QUnit.module("Importing npm modules using 'browser' config");
 
 QUnit.test("Array property value", function(assert){
