@@ -125,57 +125,12 @@ var crawl = {
 			return;
 		}
 
-		var expectedPkg = utils.extend({}, childPkg);
-		var requestedVersion = expectedPkg.version;
+		var requestedVersion = childPkg.version;
 		return npmLoad(context, childPkg, requestedVersion)
 		.then(function(pkg){
 			crawl.setVersionsConfig(context, pkg, requestedVersion);
 			return pkg;
 		});
-
-		//return finishLoad(childPkg);
-		
-		// otherwise go get child ... but don't process dependencies until all of these dependencies have finished
-		function finishLoad(childPkg) {
-			var copy = utils.extend({}, childPkg);
-			var requestedVersion = copy.version;
-
-			return npmLoad(context, childPkg)
-			.then(function(lpkg){
-				if(!lpkg) {
-					return lpkg;
-				}
-
-				if(!isFlat) {
-					if(!crawl.pkgSatisfies(lpkg, requestedVersion)) {
-						debugger;
-					}
-
-				}
-				
-
-				// npm3 -> if we found an incorrect version, start back in the
-				// most nested position possible and crawl up from there.
-				if(SemVer.validRange(copy.version) &&
-				   SemVer.valid(lpkg.version) && 
-				   !SemVer.satisfies(lpkg.version, copy.version) &&
-					!!childPkg.nestedFileUrl && 
-					childPkg.origFileUrl !== childPkg.nestedFileUrl) {
-
-					var newCopy = utils.extend({}, copy);
-					newCopy.origFileUrl = crawl.parentMostAddress(context, {
-						name: newCopy.name,
-						version: newCopy.version,
-						origFileUrl: newCopy.nestedFileUrl
-					});
-					return finishLoad(newCopy);
-				}
-
-				crawl.setVersionsConfig(context, lpkg, copy.version);
-
-				return lpkg;
-			});
-		}
 	},
 
 	/**
@@ -364,24 +319,11 @@ var crawl = {
 		versions[versionRange] = pkg;
 	},
 	pkgSatisfies: function(pkg, versionRange) {
-		return SemVer.validRange(versionRange) && 
+		return SemVer.validRange(versionRange) &&
 			SemVer.valid(pkg.version) ?
 			SemVer.satisfies(pkg.version, versionRange) : true;
-	},
-	// NPM3, have we tried to crawl from the nested position yet.
-	// With npm3 we first try to the parent-most folder, then start crawling
-	// from the default npm2 nested spot and traverse up from there.
-	hasCrawledNested: function(pkg){
-		return !!pkg.nestedFileUrl && 
-			!!pkg.__crawledNestedPosition;
-	},
-	crawlingNestedPosition: function(pkg){
-		pkg.__crawledNestedPosition = true;	
 	}
 };
-
-
-module.exports = crawl;
 
 function nodeModuleAddress(address) {
 	var nodeModules = "/node_modules/",
@@ -430,84 +372,127 @@ function addDeps(packageJSON, dependencies, deps, type, defaultProps){
 	}
 }
 
-function PackageLoader(pkg){
+/**
+ * A FetchTask is an *attempt* to load a package.json. It might fail
+ * if there is a 404 or if the package we fetched is not the correct version.
+ * In either of those cases we'll either:
+ *
+ * 1) If npm3 we'll first try to crawl from the most nested position
+ * 2) If not npm3 (or we've already done #1) we'll traverse up the
+ * node_modules folder structure.
+ */
+function FetchTask(context, pkg){
+	this.context = context;
 	this.pkg = pkg;
+	this.orig = utils.extend({}, pkg);
 	this.requestedVersion = pkg.version;
+	this.failed = false;
 }
 
-utils.extend(PackageLoader.prototype, {
-	/**
-	 * Does the actual loading
-	 */
+utils.extend(FetchTask.prototype, {
 	load: function(){
+		var task = this;
+		var pkg = this.pkg;
+		var context = this.context;
+		var loader = context.loader;
 
+		var fileUrl = pkg.fileUrl = pkg.nextFileUrl || pkg.origFileUrl;
+		context.paths[fileUrl] = pkg;
+
+		return loader.fetch({
+			address: fileUrl,
+			name: fileUrl,
+			metadata: {}
+		})
+		.then(function(src){
+			task.src = src;
+
+			if(!task.isCompatibleVersion()) {
+				task.failed = true;
+			}
+		}, function(err){
+			task.error = err;
+			task.failed = true;
+		});
+	},
+
+	/**
+	 * Is the package fetched from this task a compatible version?
+	 */
+	isCompatibleVersion: function(){
+		var pkg = this.getPackage();
+		var requestedVersion = this.requestedVersion;
+
+		return SemVer.validRange(requestedVersion) && 
+			SemVer.valid(pkg.version) ?
+			SemVer.satisfies(pkg.version, requestedVersion) : true;
+	},
+
+	/**
+	 * Get the package.json from this task.
+	 */
+	getPackage: function(){
+		if(this._fetchedPackage) {
+			return this._fetchedPackage;
+		}
+		this._fetchedPackage = crawl.processPkgSource(this.context,
+													  this.pkg,
+													  this.src);
+		return this._fetchedPackage;
+	},
+
+	/**
+	 * Get the next package to look up by traversing up the node_modules.
+	 * Create a new pkg by extending the existing one
+	 */
+	next: function(){
+		var pkg = utils.extend({}, this.orig);
+
+		var isFlat = this.context.isFlatFileStructure;
+		var fileUrl = this.pkg.fileUrl;
+		var context = this.context;
+
+		if(isFlat && !pkg.__crawledNestedPosition) {
+			pkg.__crawledNestedPosition = true;
+			pkg.nextFileUrl = pkg.nestedFileUrl;
+		}
+		else {
+			// make sure we aren't loading something we've already loaded
+			var parentAddress = utils.path.parentNodeModuleAddress(fileUrl);
+			if(!parentAddress) {
+				throw new Error('Did not find ' + pkg.origFileUrl);
+			}
+			var nodeModuleAddress = parentAddress + "/" + pkg.name +
+				"/package.json";
+
+			pkg.nextFileUrl = nodeModuleAddress;
+		}
+
+		return pkg;
 	}
 });
 
 // Loads package.json
 // if it finds one, it sets that package in paths
 // so it won't be loaded twice.
-function npmLoad(context, pkg, requestedVersion, fileUrl){
-	var loader = context.loader;
-	fileUrl = fileUrl || pkg.origFileUrl;
-	context.paths[fileUrl] = pkg;
-	pkg.fileUrl = fileUrl;
+function npmLoad(context, pkg){
+	var task = new FetchTask(context, pkg);
 
-	var copy = utils.extend({}, pkg);
-	var isFlat = context.isFlatFileStructure;
-
-	return loader.fetch({
-		address: fileUrl,
-		name: fileUrl,
-		metadata: {}
-	}).then(null,function(ex){
-		if(isFlat && pkg.nestedFileUrl &&
-		   !pkg.__crawledNestedPosition) {
-			pkg.__crawledNestedPosition = true;
-			fileUrl = pkg.nestedFileUrl || fileUrl;
-		}
-
-		return npmTraverseUp(context, copy, requestedVersion, fileUrl);
-	}).then(function(source){
-		if(source && typeof source === "string") {
-			return crawl.processPkgSource(context, pkg, source); 
-		}
-		return source;
-	}).then(function(pkg){
-		if(!pkg) {
-			return pkg;
-		}
-
-		if(!crawl.pkgSatisfies(pkg, requestedVersion)) {
+	return task.load().then(function(){
+		if(task.failed) {
+			// Recurse. Calling task.next gives us a new pkg object
+			// with the fileUrl being the parent node_modules folder.
+			pkg = task.next();
 			
-			if(isFlat && !crawl.hasCrawledNested(copy)) {
-				// For npm3 we'll first go to the nested position and
-				// traverse up from there.
-				copy.origFileUrl = copy.nestedFileUrl;
-				copy.origFileUrl = crawl.parentMostAddress(context, copy);
-				crawl.crawlingNestedPosition(copy);
-				return npmLoad(context, copy, requestedVersion);
-			} else {
-				return npmTraverseUp(context, copy, requestedVersion, fileUrl);
+			var loadedPkg = context.paths[pkg.nextFileUrl];
+			if(loadedPkg) {
+				return loadedPkg;
 			}
 
+			return npmLoad(context, pkg);
 		}
-
-		return pkg;
+		return task.getPackage();
 	});
-};
-
-function npmTraverseUp(context, pkg, requestedVersion, fileUrl) {
-	// make sure we aren't loading something we've already loaded
-	var parentAddress = utils.path.parentNodeModuleAddress(fileUrl);
-	if(!parentAddress) {
-		throw new Error('Did not find ' + pkg.origFileUrl);
-	}
-	var nodeModuleAddress = parentAddress + "/" + pkg.name + "/package.json";
-	if(context.paths[nodeModuleAddress]) {
-		// already processed
-		return context.paths[nodeModuleAddress];
-	} else {
-		return npmLoad(context, pkg, requestedVersion, nodeModuleAddress);
-	}
 }
+
+module.exports = crawl;

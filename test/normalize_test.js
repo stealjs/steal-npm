@@ -301,7 +301,7 @@ QUnit.test("Race conditions in loading deps are resolved", function(assert){
 				assert.equal(name, "dep3@1.0.0#index");
 			});
 
-		Promise.all([one, two]).then(done, done);
+		Promise.all([one, two]).then(done, helpers.fail(assert, done));
 	});
 });
 
