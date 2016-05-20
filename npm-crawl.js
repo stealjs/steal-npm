@@ -95,6 +95,7 @@ var crawl = {
 	 */
 	fetchDep: function(context, parentPkg, childPkg, isRoot){
 		var pkg = parentPkg;
+		var isFlat = context.isFlatFileStructure;
 
 		// if a peer dependency, and not isRoot
 		if(childPkg._isPeerDependency && !isRoot ) {
@@ -107,7 +108,7 @@ var crawl = {
 			childPkg.origFileUrl = childPkg.nestedFileUrl = 
 				utils.path.depPackage(pkg.fileUrl, childPkg.name);
 
-			if(context.isFlatFileStructure) {
+			if(isFlat) {
 				// npm 3
 				childPkg.origFileUrl = crawl.parentMostAddress(context,
 															   childPkg);
@@ -124,22 +125,34 @@ var crawl = {
 			return;
 		}
 
-		return finishLoad(childPkg);
+		var expectedPkg = utils.extend({}, childPkg);
+		var requestedVersion = expectedPkg.version;
+		return npmLoad(context, childPkg, requestedVersion)
+		.then(function(pkg){
+			crawl.setVersionsConfig(context, pkg, requestedVersion);
+			return pkg;
+		});
+
+		//return finishLoad(childPkg);
 		
 		// otherwise go get child ... but don't process dependencies until all of these dependencies have finished
 		function finishLoad(childPkg) {
 			var copy = utils.extend({}, childPkg);
+			var requestedVersion = copy.version;
 
 			return npmLoad(context, childPkg)
-			.then(function(source){
-				if(source) {
-					return crawl.processPkgSource(context, childPkg, source); 
-				} // else if there's no source, it's likely because this dependency has been found elsewhere
-			})
 			.then(function(lpkg){
 				if(!lpkg) {
 					return lpkg;
 				}
+
+				if(!isFlat) {
+					if(!crawl.pkgSatisfies(lpkg, requestedVersion)) {
+						debugger;
+					}
+
+				}
+				
 
 				// npm3 -> if we found an incorrect version, start back in the
 				// most nested position possible and crawl up from there.
@@ -351,8 +364,19 @@ var crawl = {
 		versions[versionRange] = pkg;
 	},
 	pkgSatisfies: function(pkg, versionRange) {
-		return SemVer.validRange(versionRange) ?
+		return SemVer.validRange(versionRange) && 
+			SemVer.valid(pkg.version) ?
 			SemVer.satisfies(pkg.version, versionRange) : true;
+	},
+	// NPM3, have we tried to crawl from the nested position yet.
+	// With npm3 we first try to the parent-most folder, then start crawling
+	// from the default npm2 nested spot and traverse up from there.
+	hasCrawledNested: function(pkg){
+		return !!pkg.nestedFileUrl && 
+			!!pkg.__crawledNestedPosition;
+	},
+	crawlingNestedPosition: function(pkg){
+		pkg.__crawledNestedPosition = true;	
 	}
 };
 
@@ -406,40 +430,84 @@ function addDeps(packageJSON, dependencies, deps, type, defaultProps){
 	}
 }
 
+function PackageLoader(pkg){
+	this.pkg = pkg;
+	this.requestedVersion = pkg.version;
+}
+
+utils.extend(PackageLoader.prototype, {
+	/**
+	 * Does the actual loading
+	 */
+	load: function(){
+
+	}
+});
+
 // Loads package.json
 // if it finds one, it sets that package in paths
 // so it won't be loaded twice.
-function npmLoad(context, pkg, fileUrl){
+function npmLoad(context, pkg, requestedVersion, fileUrl){
 	var loader = context.loader;
 	fileUrl = fileUrl || pkg.origFileUrl;
 	context.paths[fileUrl] = pkg;
 	pkg.fileUrl = fileUrl;
+
+	var copy = utils.extend({}, pkg);
+	var isFlat = context.isFlatFileStructure;
 
 	return loader.fetch({
 		address: fileUrl,
 		name: fileUrl,
 		metadata: {}
 	}).then(null,function(ex){
-		if(pkg.nestedFileUrl && !pkg.__crawledNestedPosition) {
+		if(isFlat && pkg.nestedFileUrl &&
+		   !pkg.__crawledNestedPosition) {
 			pkg.__crawledNestedPosition = true;
 			fileUrl = pkg.nestedFileUrl || fileUrl;
 		}
 
-		return npmTraverseUp(context, pkg, fileUrl);
+		return npmTraverseUp(context, copy, requestedVersion, fileUrl);
+	}).then(function(source){
+		if(source && typeof source === "string") {
+			return crawl.processPkgSource(context, pkg, source); 
+		}
+		return source;
+	}).then(function(pkg){
+		if(!pkg) {
+			return pkg;
+		}
+
+		if(!crawl.pkgSatisfies(pkg, requestedVersion)) {
+			
+			if(isFlat && !crawl.hasCrawledNested(copy)) {
+				// For npm3 we'll first go to the nested position and
+				// traverse up from there.
+				copy.origFileUrl = copy.nestedFileUrl;
+				copy.origFileUrl = crawl.parentMostAddress(context, copy);
+				crawl.crawlingNestedPosition(copy);
+				return npmLoad(context, copy, requestedVersion);
+			} else {
+				return npmTraverseUp(context, copy, requestedVersion, fileUrl);
+			}
+
+		}
+
+		return pkg;
 	});
 };
 
-function npmTraverseUp(context, pkg, fileUrl) {
+function npmTraverseUp(context, pkg, requestedVersion, fileUrl) {
 	// make sure we aren't loading something we've already loaded
 	var parentAddress = utils.path.parentNodeModuleAddress(fileUrl);
 	if(!parentAddress) {
 		throw new Error('Did not find ' + pkg.origFileUrl);
 	}
-	var nodeModuleAddress = parentAddress+"/"+pkg.name+"/package.json";
+	var nodeModuleAddress = parentAddress + "/" + pkg.name + "/package.json";
 	if(context.paths[nodeModuleAddress]) {
 		// already processed
-		return;
+		return context.paths[nodeModuleAddress];
 	} else {
-		return npmLoad(context, pkg, nodeModuleAddress);
+		return npmLoad(context, pkg, requestedVersion, nodeModuleAddress);
 	}
 }
