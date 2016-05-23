@@ -151,7 +151,7 @@ QUnit.test("Can load two separate versions of same package", function(assert){
 	.then(function(name){
 		assert.equal(name, "set@3.0.4#main", "Got the correct version of set");
 	})
-	.then(done, done);
+	.then(done, helpers.fail(assert, done));
 });
 
 QUnit.test("Configures a package when conflicting package.jsons are progressively loaded", function(assert){
@@ -247,6 +247,62 @@ QUnit.test("Loads npm convention of folder with trailing slash", function(assert
 		assert.equal(name, "dep@1.0.0#main");
 	})
 	.then(done, done);
+});
+
+QUnit.test("Race conditions in loading deps are resolved", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.npmVersion(2)
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			dependencies: {
+				"dep1": "1.0.0"
+			}
+		})
+		.withPackages([
+			new Package({
+				name: "dep1",
+				version: "1.0.0",
+				dependencies: {
+					"dep2": "1.0.0",
+					"dep3": "2.0.0"
+				}
+			}).deps([
+				new Package({
+					name: "dep2",
+					version: "1.0.0",
+					dependencies: {
+						"dep3": "1.0.0"
+					}
+				}),
+				new Package({
+					name: "dep3",
+					version: "1.0.0"
+				})
+			]),
+			new Package({
+				name: "dep3",
+				version: "2.0.0"
+			})
+		])
+		.loader;
+
+	loader.normalize("dep2", "dep1@1.0.0#index")
+	.then(function(name){
+		var one = loader.normalize("dep3", "dep1@1.0.0#index")
+			.then(function(name){
+				assert.equal(name, "dep3@2.0.0#index");
+			});
+
+		var two = loader.normalize("dep3", "dep2@1.0.0#index")
+			.then(function(name){
+				assert.equal(name, "dep3@1.0.0#index");
+			});
+
+		Promise.all([one, two]).then(done, helpers.fail(assert, done));
+	});
 });
 
 QUnit.module("normalizing with main config");

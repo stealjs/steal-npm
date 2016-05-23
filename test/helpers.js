@@ -109,11 +109,18 @@ Runner.prototype.withPackages = function(packages){
 	});
 
 	function addPackage(package, parentPackage, parentFileUrl){
+		function shouldNest() {
+			return parentPackage && (
+				!runner.isFlat() ||
+				runner.packagePaths[fileUrl + "/package.json"]
+			);
+		}
+
 		var pkg = package.pkg;
 
 		var fileUrl = "./node_modules/" + pkg.name;
 
-		if(parentPackage && runner.packagePaths[fileUrl + "/package.json"]) {
+		if(shouldNest()) {
 			fileUrl = parentFileUrl + "/node_modules/" + pkg.name;
 		}
 
@@ -139,7 +146,12 @@ Runner.prototype.withConfig = function(cfg){
 };
 
 Runner.prototype.npmVersion = function(version){
+	if(arguments.length === 0) {
+		return this._version; 
+	}
+
 	this.algorithm = version >= 3 ? "flat": undefined;
+	this._version = version;
 	this._addVersion();
 	return this;
 };
@@ -151,6 +163,10 @@ Runner.prototype._addVersion = function(){
 		var system = root.system = root.system || {};
 		system.npmAlgorithm = algo;
 	}
+};
+
+Runner.prototype.isFlat = function(){
+	return this._version >= 3;
 };
 
 function Package(pkg){
@@ -182,6 +198,12 @@ module.exports = function(System){
 		Package: Package,
 		package: function(pkg){
 			return new Package(pkg);
+		},
+		fail: function(assert, done){
+			return function(err){
+				assert.ok(false, err.message && err.stack || err);
+				done(err);
+			};
 		}
 	};
 };

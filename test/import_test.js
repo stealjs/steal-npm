@@ -198,4 +198,3 @@ QUnit.test("Correctly imports globalBrowser package that is depended on by anoth
 			assert.ok(!err, err.stack || err);
 		});
 });
-
