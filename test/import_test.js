@@ -120,6 +120,25 @@ QUnit.test("Retries with /index", function(assert){
 	.then(done, done);
 });
 
+QUnit.test("Retries /package convention as well", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0"
+		})
+		.withModule("app@1.0.0#package.json", "module.exports = 'works'")
+		.loader;
+
+	loader["import"]("./package", { name : "app@1.0.0#main" })
+	.then(function(mod){
+		assert.equal(mod, "works", "loaded the package.json");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.test("Doesn't retry non-npm module names", function(assert){
 	var done = assert.async();
 
@@ -141,6 +160,25 @@ QUnit.test("Doesn't retry non-npm module names", function(assert){
 		assert.ok(err, "Got an error, didn't retry");
 	})
 	.then(done, done);
+});
+
+QUnit.test("Retries when using the forward slash convention", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0"
+		})
+		.withModule("app@1.0.0#lib/index", "module.exports = 'works'")
+		.loader;
+
+	loader["import"]("./lib/", { name: "app@1.0.0#main" })
+	.then(function(mod){
+		assert.equal(mod, "works", "imported the module");
+	})
+	.then(done, helpers.fail(assert, done));
 });
 
 QUnit.module("Importing globalBrowser config");
