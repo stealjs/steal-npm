@@ -181,6 +181,32 @@ QUnit.test("Retries when using the forward slash convention", function(assert){
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("Doesn't retry the forward slash convention in production", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0"
+		})
+		.withModule("app@1.0.0#main", "module.exports = 'works'")
+		.withModule("app@1.0.0#lib/index", "module.exports = 'works'")
+		.loader;
+
+	loader["import"]("app")
+	.then(function(){
+		delete loader.npmContext;
+
+		return loader["import"]("./lib/", { name: "app@1.0.0#main" });
+	})
+	.then(null, function(err){
+		assert.ok(err, "Got an error because we don't do retries in Prod");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
+
 QUnit.module("Importing globalBrowser config");
 
 QUnit.test("Correctly imports globalBrowser package that is depended on by another", function(assert){
