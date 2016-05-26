@@ -12,7 +12,7 @@
     "test:browser": "npm run copy && testee test/steal.html --browsers firefox --reporter Spec",
     "live-reload-test": "cd test/live-reload && live-reload-test",
     "test:live-reload": "npm run live-reload-test & testee test/steal-live-reload.html --browsers firefox --reporter Spec",
-    "version": "git commit -am \"Update dist for release\" && git checkout -b release && git add -f dist/",
+    "version": "git commit -am \"Update dist for release\"",
     "release:patch": "npm version patch && npm publish",
     "release:minor": "npm version minor && npm publish",
     "release:major": "npm version major && npm publish"
