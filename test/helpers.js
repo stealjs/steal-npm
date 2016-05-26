@@ -191,7 +191,7 @@ Package.prototype.forEachDeps = function(callback){
 };
 
 module.exports = function(System){
-	return {
+	var helpers = {
 		clone: function(){
 			return new Runner(System).clone();
 		},
@@ -199,11 +199,60 @@ module.exports = function(System){
 		package: function(pkg){
 			return new Package(pkg);
 		},
+		// Create a done callback that will call some other functions
+		// first, usually for cleanup.
+		done: function(done /* , fns */){
+			var fns = [].slice.call(arguments, 1);
+			return function(value){
+				utils.forEach(fns, function(fn){
+					fn();
+				});
+				done(value);
+			};
+		},
 		fail: function(assert, done){
 			return function(err){
 				assert.ok(false, err.message && err.stack || err);
 				done(err);
 			};
+		},
+		// Override a System hook. Returns a function that will reset
+		// to the original state.
+		hook: function(prop, callback){
+			var hook = System[prop];
+			var fn = callback(hook);
+			System[prop] = fn;
+
+			return function(){
+				System[prop] = hook;
+			};
+		},
+		// Override System.fetch, providing some values that will resolve
+		// moduleNames.
+		hookFetch: function(loads){
+			return helpers.hook("fetch", function(fetch){
+				return function(load){
+					var value = loads[load.name];
+					if(value) {
+						if(typeof value === "object") {
+							value = JSON.stringify(value);
+						}
+						return Promise.resolve(value);
+					} else {
+						return Promise.reject("Unable to load " + load.address);
+					}
+				};
+			});
+		},
+		makeContext: function(){
+			return {
+				loader: System,
+				paths: {},
+				loadingPaths: {},
+				packages: []
+			};
 		}
 	};
+
+	return helpers;
 };
