@@ -1,6 +1,6 @@
 {
   "name": "system-npm",
-  "version": "0.6.15",
+  "version": "0.6.16",
   "description": "npm plugin for StealJS",
   "main": "test/example-main.js",
   "directories": {
