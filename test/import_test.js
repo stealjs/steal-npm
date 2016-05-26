@@ -233,7 +233,7 @@ QUnit.test("Correctly imports globalBrowser package that is depended on by anoth
 					"http": "http"
 				},
 				dependencies: {
-					"http": "~0.0.0"
+					"http": "0.10.0"
 				}
 			},
 			{
