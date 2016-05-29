@@ -150,7 +150,7 @@ Runner.prototype.npmVersion = function(version){
 		return this._version; 
 	}
 
-	this.algorithm = version >= 3 ? "flat": undefined;
+	this.algorithm = version >= 3 ? "flat": "nested";
 	this._version = version;
 	this._addVersion();
 	return this;
