@@ -221,8 +221,11 @@ QUnit.test("Loads npm convention of folder with trailing slash", function(assert
 		}])
 		.loader;
 
-	// Relative to a nested module
-	loader.normalize("./", "dep@1.0.0#folder/deep/mod")
+	helpers.init(loader)
+	.then(function(){
+		// Relative to a nested module
+		return loader.normalize("./", "dep@1.0.0#folder/deep/mod")
+	})
 	.then(function(name){
 		// Relative to current folder uses index
 		assert.equal(name, "dep@1.0.0#folder/deep/index");
