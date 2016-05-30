@@ -69,6 +69,10 @@ Runner.prototype.clone = function(){
 
 	var normalize = loader.normalize;
 	loader.normalize = function(name){
+		if(this._helperInited) {
+			return normalize.apply(this, arguments);
+		}
+
 		var loader = this, args = arguments;
 		return normalize.apply(this, arguments)
 			.then(function(name){
@@ -252,6 +256,12 @@ module.exports = function(System){
 				loadingPaths: {},
 				packages: []
 			};
+		},
+		init: function(loader){
+			return loader.import("package.json!npm")
+			.then(function(){
+				loader._helperInited = true;
+			});
 		}
 	};
 
