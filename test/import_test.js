@@ -47,6 +47,99 @@ QUnit.test("Allows a relative main", function(assert){
 	.then(done, done);
 });
 
+QUnit.test("Default npm algorithm", function (assert) {
+	var done = assert.async();
+
+	var runner = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				"dep1": "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "dep1",
+				version: "1.0.0",
+				main: "main.js",
+				dependencies: {
+					"dep2": "1.0.0"
+				}
+			},
+			{
+				name: "dep2",
+				version: "1.0.0",
+				main: "main.js"
+			}
+		])
+		.withModule("dep1@1.0.0#main", "module.exports = require('dep2');")
+		.withModule("dep2@1.0.0#main", "module.exports = 'loaded';")
+		.withModule("app@1.0.0#main", "module.exports = require('dep1');");
+
+	var loader = runner.loader;
+
+	loader["import"]("app")
+		.then(function(val){
+			assert.equal(runner.npmVersion(), 3, "we assume that the default npm version is higher or equal 3");
+			assert.equal(val, "loaded", "dependencies loaded");
+			assert.equal(loader.npmAlgorithm, "flat", "default npm algorithm is flat");
+			assert.equal(loader.npmContext.isFlatFileStructure, true, "default isFlatFileStructure is 'true'")
+		})
+		.then(done, function(err){
+			assert.ok(!err, err.stack || err);
+		});
+});
+
+QUnit.test("Nested npm algorithm (< npm 3)", function (assert) {
+	var done = assert.async();
+
+	var runner = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			system: {
+				npmAlgorithm: "nested"
+			},
+			dependencies: {
+				"dep1": "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "dep1",
+				version: "1.0.0",
+				main: "main.js",
+				dependencies: {
+					"dep2": "1.0.0"
+				}
+			},
+			{
+				name: "dep2",
+				version: "1.0.0",
+				main: "main.js"
+			}
+		])
+		.withModule("dep1@1.0.0#main", "module.exports = require('dep2');")
+		.withModule("dep2@1.0.0#main", "module.exports = 'loaded';")
+		.withModule("app@1.0.0#main", "module.exports = require('dep1');");
+
+	var loader = runner.loader;
+
+	loader["import"]("app")
+		.then(function(val){
+			assert.equal(runner.isFlat(), false, "with npm algorithm=nested, npm have to be '2.15.5' or less");
+			assert.equal(val, "loaded", "dependencies loaded");
+			assert.equal(loader.npmAlgorithm, "nested", "npm algorithm is nested");
+			assert.equal(loader.npmContext.isFlatFileStructure, false, "isFlatFileStructure is 'false'")
+		})
+		.then(done, function(err){
+			assert.ok(!err, err.stack || err);
+		});
+});
+
 QUnit.module("Importing npm modules using 'browser' config");
 
 QUnit.test("Array property value", function(assert){
@@ -213,7 +306,6 @@ QUnit.test("Correctly imports globalBrowser package that is depended on by anoth
 	var done = assert.async();
 
 	var loader = helpers.clone()
-		.npmVersion(3)
 		.rootPackage({
 			name: "app",
 			version: "1.0.0",
