@@ -152,6 +152,7 @@ var utils = {
 		 * @return {system-npm/parsed_npm}
 		 */
 		parse: function (moduleName, currentPackageName, global) {
+			// debugger;
 			var pluginParts = moduleName.split('!');
 			var modulePathParts = pluginParts[0].split("#");
 			var versionParts = modulePathParts[0].split("@");
@@ -167,10 +168,19 @@ var utils = {
 			var packageName,
 				modulePath;
 
-			// if relative, use currentPackageName
-			if( currentPackageName && utils.path.isRelative(moduleName) ) {
-				packageName= currentPackageName;
+			// if the module name is relative
+			// use the currentPackageName
+			if (currentPackageName && utils.path.isRelative(moduleName)) {
+				packageName = currentPackageName;
 				modulePath = versionParts[0];
+
+				// if the module name starts with the ~ (tilde) operator
+				// use the currentPackageName
+			} else if (currentPackageName && utils.path.startsWithTildeSlash(moduleName)) {
+				debugger;
+				packageName = currentPackageName;
+				modulePath = versionParts[0].split("/").slice(1).join("/");
+
 			} else {
 
 				if(modulePathParts[1]) { // foo@1.2#./path
@@ -433,6 +443,9 @@ var utils = {
 		},
 		isRelative: function(path) {
 			return  path.substr(0,1) === ".";
+		},
+		startsWithTildeSlash: function( path ) {
+			return path.substr(0,2) === "~/";
 		},
 		joinURIs: function(base, href) {
 			function removeDotSegments(input) {
