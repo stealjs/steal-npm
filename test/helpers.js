@@ -153,19 +153,20 @@ Runner.prototype.npmVersion = function(version){
 	if(arguments.length === 0) {
 		return this._version; 
 	}
-
-	this.algorithm = version >= 3 ? "flat": undefined;
 	this._version = version;
-	this._addVersion();
 	return this;
 };
 
 Runner.prototype._addVersion = function(){
 	var root = this.root;
-	var algo = this.algorithm;
-	if(algo) {
-		var system = root.system = root.system || {};
-		system.npmAlgorithm = algo;
+	var system = root.system = root.system || {};
+
+	if(root.system.npmAlgorithm === 'nested') {
+		system.npmAlgorithm = this.algorithm = 'nested';
+		this.npmVersion(2.15); // latest npm 2
+	} else {
+		system.npmAlgorithm = this.algorithm = 'flat';
+		this.npmVersion(3);
 	}
 };
 
