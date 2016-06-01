@@ -140,6 +140,109 @@ QUnit.test("Nested npm algorithm (< npm 3)", function (assert) {
 		});
 });
 
+QUnit.module("Importing npm modules with tilde operator");
+
+QUnit.test("Import module with the ~ operator", function (assert) {
+	var done = assert.async();
+
+	var app = "var foobar = require('~/foo/foobar');" +
+						"var barfoo = require('~/./bar/barfoo');" +
+						"module.exports = {" +
+							"foobar: foobar," +
+							"barfoo: barfoo" +
+						"};";
+
+	var runner = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			system: {
+				main: "main"
+			}
+		})
+		.withModule("app@1.0.0#foo/foobar", "module.exports = 'module foobar';")
+		.withModule("app@1.0.0#bar/barfoo", "module.exports = 'module barfoo';")
+		.withModule("app@1.0.0#main", app);
+
+	var loader = runner.loader;
+
+	loader["import"]("app")
+		.then(function(app){
+			assert.equal(app.foobar, "module foobar", "foobar module loaded");
+			assert.equal(app.barfoo, "module barfoo", "barfoo module loaded");
+		})
+		.then(done, function(err){
+			assert.ok(!err, err.stack || err);
+		});
+});
+
+QUnit.test("Import module with the ~ operator with directories.lib", function (assert) {
+	var done = assert.async();
+
+	var app = "var foobar = require('~/foo/foobar');" +
+						"module.exports = {" +
+						"foobar: foobar" +
+						"};";
+
+	var runner = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			system: {
+				main: "main",
+				directories: {
+					lib: "src"
+				}
+			}
+		})
+		.withModule("app@1.0.0#foo/foobar", "module.exports = 'module foobar';")
+		.withModule("app@1.0.0#main", app);
+
+	var loader = runner.loader;
+
+	loader["import"]("app")
+		.then(function(app){
+			assert.equal(app.foobar, "module foobar", "foobar module loaded");
+		})
+		.then(done, function(err){
+			assert.ok(!err, err.stack || err);
+		});
+});
+
+QUnit.test("Import module with the ~ operator in dependencies", function (assert) {
+	var done = assert.async();
+
+	var runner = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				"dep1": "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "dep1",
+				version: "1.0.0",
+				main: "main.js"
+			}
+		])
+		.withModule("dep1@1.0.0#foobar", "module.exports = 'works';")
+		.withModule("dep1@1.0.0#main", "module.exports = require('~/foobar');")
+		.withModule("app@1.0.0#main", "module.exports = require('dep1');");
+
+	var loader = runner.loader;
+
+	loader["import"]("app")
+		.then(function(val){
+			assert.equal(val, 'works', 'load dependency');
+		})
+		.then(done, function(err){
+			assert.ok(!err, err.stack || err);
+		});
+});
+
 QUnit.module("Importing npm modules using 'browser' config");
 
 QUnit.test("Array property value", function(assert){
@@ -298,7 +401,6 @@ QUnit.test("Doesn't retry the forward slash convention in production", function(
 	})
 	.then(done, helpers.fail(assert, done));
 });
-
 
 QUnit.module("Importing globalBrowser config");
 
