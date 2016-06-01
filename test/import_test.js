@@ -47,6 +47,45 @@ QUnit.test("Allows a relative main", function(assert){
 	.then(done, done);
 });
 
+QUnit.test("A project within a node_modules folder", function(assert){
+	var done = assert.async();
+
+	var main = "module.exports = require('dep');";
+	var dep = "module.exports = 'works';";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				dep: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "dep",
+				main: "main.js",
+				version: "1.0.0"
+			}
+		])
+		.withConfig({
+			baseURL: "http://example.com/node_modules/project/something/else/"
+		})
+		.withModule("main", main)
+		.withModule("dep@1.0.0#main", dep)
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		return loader["import"](loader.main);
+	})
+	.then(function(val){
+		assert.equal(val, "works", "able to load a project within a node_modules folder");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.module("Importing npm modules using 'browser' config");
 
 QUnit.test("Array property value", function(assert){
