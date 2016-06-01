@@ -1,6 +1,27 @@
 var helpers = require("./helpers")(System);
+var utils = require("npm-utils");
 
 QUnit.module("Importing npm modules");
+
+QUnit.test("package.json!npm produces correct fileUrl paths", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js"
+		})
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		var pkg = utils.pkg.getDefault(loader);
+		assert.equal(pkg.fileUrl, "./package.json",
+					 "correct default package.json");
+	})
+	.then(done, helpers.fail(assert, done));
+});
 
 QUnit.test("process.cwd()", function(assert){
 	var done = assert.async();
