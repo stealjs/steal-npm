@@ -152,7 +152,6 @@ var utils = {
 		 * @return {system-npm/parsed_npm}
 		 */
 		parse: function (moduleName, currentPackageName, global) {
-			// debugger;
 			var pluginParts = moduleName.split('!');
 			var modulePathParts = pluginParts[0].split("#");
 			var versionParts = modulePathParts[0].split("@");
@@ -177,7 +176,6 @@ var utils = {
 				// if the module name starts with the ~ (tilde) operator
 				// use the currentPackageName
 			} else if (currentPackageName && utils.path.startsWithTildeSlash(moduleName)) {
-				debugger;
 				packageName = currentPackageName;
 				modulePath = versionParts[0].split("/").slice(1).join("/");
 
