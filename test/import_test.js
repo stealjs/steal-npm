@@ -266,7 +266,6 @@ QUnit.test("Doesn't retry the forward slash convention in production", function(
 	.then(done, helpers.fail(assert, done));
 });
 
-
 QUnit.module("Importing globalBrowser config");
 
 QUnit.test("Correctly imports globalBrowser package that is depended on by another", function(assert){
