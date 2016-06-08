@@ -308,6 +308,55 @@ QUnit.test("Race conditions in loading deps are resolved", function(assert){
 	});
 });
 
+QUnit.test("Normalizing a package that refers to itself", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				dep: "1.0.0",
+				connect: "1.0.0"
+			},
+			system: {
+				npmAlgorithm: "nested"
+			}
+		})
+		.withPackages([
+			new Package({
+				name: "dep",
+				version: "1.0.0",
+				main: "main.js",
+				dependencies: {
+					connect: "2.0.0"
+				}
+			}).deps([
+				{
+					name: "connect",
+					version: "2.0.0",
+					main: "main.js"
+				}
+			]),
+			{
+				name: "connect",
+				version: "1.0.0",
+				main: "main.js"
+			}
+		])
+		.loader;
+
+	// 
+	loader.normalize("connect", "dep@1.0.0#main")
+	.then(function(){
+		return loader.normalize("connect/foo/bar", "connect@2.0.0#main")
+	}).then(function(name){
+		assert.equal(name, "connect@2.0.0#foo/bar");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.module("normalizing with main config");
 
 var mainVariations = {
