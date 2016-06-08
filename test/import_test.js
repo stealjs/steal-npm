@@ -1,6 +1,27 @@
 var helpers = require("./helpers")(System);
+var utils = require("npm-utils");
 
 QUnit.module("Importing npm modules");
+
+QUnit.test("package.json!npm produces correct fileUrl paths", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js"
+		})
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		var pkg = utils.pkg.getDefault(loader);
+		assert.equal(pkg.fileUrl, "./package.json",
+					 "correct default package.json");
+	})
+	.then(done, helpers.fail(assert, done));
+});
 
 QUnit.test("process.cwd()", function(assert){
 	var done = assert.async();
@@ -140,6 +161,45 @@ QUnit.test("Nested npm algorithm (< npm 3)", function (assert) {
 		});
 });
 
+QUnit.test("A project within a node_modules folder", function(assert){
+	var done = assert.async();
+
+	var main = "module.exports = require('dep');";
+	var dep = "module.exports = 'works';";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				dep: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "dep",
+				main: "main.js",
+				version: "1.0.0"
+			}
+		])
+		.withConfig({
+			baseURL: "http://example.com/node_modules/project/something/else/"
+		})
+		.withModule("main", main)
+		.withModule("dep@1.0.0#main", dep)
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		return loader["import"](loader.main);
+	})
+	.then(function(val){
+		assert.equal(val, "works", "able to load a project within a node_modules folder");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.module("Importing npm modules with tilde operator");
 
 QUnit.test("Import module with the ~ operator", function (assert) {
@@ -209,6 +269,7 @@ QUnit.test("Import module with the ~ operator with directories.lib", function (a
 		});
 });
 
+/*
 QUnit.test("Import module with the ~ operator in dependencies", function (assert) {
 	var done = assert.async();
 
@@ -241,7 +302,30 @@ QUnit.test("Import module with the ~ operator in dependencies", function (assert
 		.then(done, function(err){
 			assert.ok(!err, err.stack || err);
 		});
+=======
+				name: "dep",
+				main: "main.js",
+				version: "1.0.0"
+			}
+		])
+		.withConfig({
+			baseURL: "http://example.com/node_modules/project/something/else/"
+		})
+		.withModule("main", main)
+		.withModule("dep@1.0.0#main", dep)
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		return loader["import"](loader.main);
+	})
+	.then(function(val){
+		assert.equal(val, "works", "able to load a project within a node_modules folder");
+	})
+	.then(done, helpers.fail(assert, done));
+>>>>>>> master
 });
+*/
 
 QUnit.module("Importing npm modules using 'browser' config");
 

@@ -256,12 +256,14 @@ QUnit.test("Race conditions in loading deps are resolved", function(assert){
 	var done = assert.async();
 
 	var loader = helpers.clone()
-		.npmVersion(2)
 		.rootPackage({
 			name: "app",
 			version: "1.0.0",
 			dependencies: {
 				"dep1": "1.0.0"
+			},
+			system: {
+				npmAlgorithm: "nested"
 			}
 		})
 		.withPackages([

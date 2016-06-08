@@ -54,6 +54,110 @@ QUnit.test("loads a package.json", function(assert){
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("Fetching while fileUrl is currently loading (first fails - error)", function(assert){
+	var done = assert.async();
+
+	var pkgOne = {
+		name: "app",
+		version: "1.0.0",
+		origFileUrl: "./node_modules/app/package.json"
+	};
+
+	var pkgTwo = {
+		name: "app",
+		version: "2.0.0",
+		origFileUrl: "./node_modules/app/package.json"
+	};
+
+	var context = helpers.makeContext();
+
+	var taskOne = new FetchTask(context, pkgOne);
+	taskOne.load();
+
+	var taskTwo = new FetchTask(context, pkgTwo);
+	taskTwo.load()
+	.then(function(){
+		assert.ok(taskTwo.failed, "It failed");
+		assert.ok(taskTwo.error, "Got an error");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
+QUnit.test("Fetching while fileUrl is currently loading (first fails - semver incompat, but compat with second)", function(assert){
+	var reset = helpers.hookFetch({
+		"./node_modules/app/package.json": {
+			name: "app",
+			version: "2.0.0",
+			main: "main.js"
+		}
+	});
+
+	var done = helpers.done(assert.async(), reset);
+
+	var pkgOne = {
+		name: "app",
+		version: "1.0.0",
+		origFileUrl: "./node_modules/app/package.json"
+	};
+
+	var pkgTwo = {
+		name: "app",
+		version: "2.0.0",
+		origFileUrl: "./node_modules/app/package.json"
+	};
+
+	var context = helpers.makeContext();
+
+	var taskOne = new FetchTask(context, pkgOne);
+	taskOne.load();
+
+	var taskTwo = new FetchTask(context, pkgTwo);
+	taskTwo.load()
+	.then(function(){
+		assert.ok(!taskTwo.failed, "It succeeded");
+
+		var pkg = taskTwo.getPackage();
+		assert.equal(pkg.version, "2.0.0");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
+QUnit.test("Fetching while fileUrl is currently loading (first fails - semver incompat, incompat with second)", function(assert){
+	var reset = helpers.hookFetch({
+		"./node_modules/app/package.json": {
+			name: "app",
+			version: "3.0.0",
+			main: "main.js"
+		}
+	});
+
+	var done = helpers.done(assert.async(), reset);
+
+	var pkgOne = {
+		name: "app",
+		version: "1.0.0",
+		origFileUrl: "./node_modules/app/package.json"
+	};
+
+	var pkgTwo = {
+		name: "app",
+		version: "2.0.0",
+		origFileUrl: "./node_modules/app/package.json"
+	};
+
+	var context = helpers.makeContext();
+
+	var taskOne = new FetchTask(context, pkgOne);
+	taskOne.load();
+
+	var taskTwo = new FetchTask(context, pkgTwo);
+	taskTwo.load()
+	.then(function(){
+		assert.ok(taskTwo.failed, "It failed");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.test("First load fails and the load for the nextFileUrl is loading",
 		   function(assert){
 	var reset = helpers.hookFetch({
