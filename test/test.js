@@ -292,4 +292,8 @@ asyncTest("works with steal-conditional", function() {
 	makeIframe("conditionals/index.html");
 });
 
+asyncTest("works if only system.main is defined", function() {
+	makeIframe("only-system-main/dev.html");
+});
+
 QUnit.start();
