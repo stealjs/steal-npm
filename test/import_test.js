@@ -540,3 +540,42 @@ QUnit.test("Correctly imports globalBrowser package that is depended on by anoth
 			assert.ok(!err, err.stack || err);
 		});
 });
+
+QUnit.test("Builtins are ignored with builtins: false", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				steal: "1.0.0"
+			},
+			system: {
+				builtins: false
+			}
+		})
+		.withPackages([
+			{
+				name: "steal",
+				version: "1.0.0",
+				main: "steal.js",
+				globalBrowser: {
+					"http": "./http"
+				}
+			}
+		])
+		.withModule("steal@1.0.0#http", "module.exports = 'foo'")
+		.withModule("http", "module.exports = 'bar'")
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		return loader["import"]("http", { name: loader.main });
+	})
+	.then(function(src){
+		assert.equal("bar", src, "imported right module");
+	})
+	.then(done, helpers.fail(assert, done));
+});
