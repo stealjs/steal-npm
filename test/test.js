@@ -4,6 +4,7 @@ require("./utils_test");
 require("./crawl_test");
 require("./normalize_test");
 require("./import_test");
+require("./load_test");
 
 var makeIframe = function(src){
 	var iframe = document.createElement('iframe');

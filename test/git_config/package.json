@@ -1,6 +1,7 @@
 {
 	"name": "mod",
 	"main": "main",
+	"version": "1.0.0",
 	"dependencies": {
 		"dep": "git://github.com/fake/thing#master"
 	},

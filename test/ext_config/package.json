@@ -1,6 +1,7 @@
 {
 	"name": "extconfig",
 	"main": "main",
+	"version": "1.0.0",
 	"dependencies": {
 		"one": "1.0.0"
 	},

@@ -54,7 +54,7 @@ QUnit.test("Allows a relative main", function(assert){
 			main: "./relative.js",
 			version: "1.0.0"
 		})
-		.withModule("relative", "module.exports = 'worked'")
+		.withModule("app@1.0.0#relative", "module.exports = 'worked'")
 		.loader;
 	
 	loader["import"]("package.json!npm")
@@ -186,7 +186,7 @@ QUnit.test("A project within a node_modules folder", function(assert){
 		.withConfig({
 			baseURL: "http://example.com/node_modules/project/something/else/"
 		})
-		.withModule("main", main)
+		.withModule("app@1.0.0#main", main)
 		.withModule("dep@1.0.0#main", dep)
 		.loader;
 
