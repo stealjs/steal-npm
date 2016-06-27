@@ -23,7 +23,6 @@
 		},
 		jsonOptions: {
 			transform: function(load, json) {
-				debugger;
 				if(json.fileUrl === "./package.json" && json.name === 'npm-app') {
 					delete json.foo;
 				}

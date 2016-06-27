@@ -19,14 +19,7 @@ var isNode = typeof process === "object" &&
  */
 exports.translate = function(load){
 	var loader = this;
-	// if a jsonOptions transformer is provided (by the System.config)
-	// use it for all json files, package.json's are also included
-	var transform = function(loader, load, data){
-		var fn = loader.jsonOptions && loader.jsonOptions.transform;
-		if(!fn) return data;
-		return fn.call(loader, load, data);
-	};
-
+	
 	// This could be an empty string if the fetch failed.
 	if(load.source == "") {
 		return "define([]);";
@@ -73,7 +66,7 @@ exports.translate = function(load){
 				if(pkg.browser){
 					delete pkg.browser.transform;
 				}
-				pkg = transform(loader, load, pkg);
+				pkg = utils.json.transform(loader, load, pkg);
 
 				packages.push({
 					name: pkg.name,
