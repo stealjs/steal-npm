@@ -194,6 +194,10 @@ asyncTest("configDependencies can override config with systemConfig export", fun
 	makeIframe("ext_config/dev.html");
 });
 
+asyncTest("transform the JSON with jsonOptions", function(){
+	makeIframe("json-options/dev.html");
+});
+
 QUnit.module("npmDependencies");
 
 asyncTest("are used exclusively if npmIgnore is not provided", function(){
