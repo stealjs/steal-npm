@@ -237,8 +237,20 @@ QUnit.test("Loads npm convention of folder with trailing slash", function(assert
 		// Relative to the parent folder uses index
 		assert.equal(name, "dep@1.0.0#folder/index");
 
+		return loader.normalize("..", "dep@1.0.0#folder/deep/mod");
+	})
+	.then(function(name){
+		// Relative to the parent folder uses index
+		assert.equal(name, "dep@1.0.0#folder/index");
+
 		// Loading to the parent-most folder of the package
 		return loader.normalize("../", "dep@1.0.0#folder/mod");
+	})
+	.then(function(name){
+		// Relative to parent-most is the pkg.main
+		assert.equal(name, "dep@1.0.0#main");
+
+		return loader.normalize("..", "dep@1.0.0#folder/mod");
 	})
 	.then(function(name){
 		// Relative to parent-most is the pkg.main
