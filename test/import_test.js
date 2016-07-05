@@ -193,8 +193,11 @@ QUnit.test("Retries /package convention as well", function(assert){
 		.loader;
 
 	loader["import"]("./package", { name : "app@1.0.0#main" })
-	.then(function(mod){
+	.then(function(mod) {
+		var pkgAddress = loader.getModuleLoad("app@1.0.0#package").metadata.address;
+
 		assert.equal(mod, "works", "loaded the package.json");
+		assert.ok(/\.json/.test(pkgAddress), "load.medatada.address has json");
 	})
 	.then(done, helpers.fail(assert, done));
 });
