@@ -1,5 +1,6 @@
 var helpers = require("./helpers")(System);
 var Package = helpers.Package;
+var utils = require("npm-utils");
 
 QUnit.module("normalizing");
 
@@ -445,4 +446,53 @@ Object.keys(mainVariations).forEach(function(testName){
 		})
 		.then(done, done);
 	});
+});
+
+QUnit.test("A package's system.main is retained when loading dependant packages", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				parent: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "parent",
+				main: "main.js",
+				version: "1.0.0",
+				system: {
+					main: "other.js",
+					map: {
+						"child/a": "child/b"
+					}
+				},
+				dependencies: {
+					child: "1.0.0"
+				}
+			},
+			{
+				name: "child",
+				main: "main.js",
+				version: "1.0.0"
+			}
+		])
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		loader.npmContext.resavePackageInfo = true;
+
+		return loader.normalize("child", "parent@1.0.0#other");
+	})
+	.then(function(name){
+		var pkgs = loader.npmContext.pkgInfo;
+		var pkg = utils.filter(pkgs, function(p) { return p.name === "parent" })[0];
+		assert.equal(pkg.system.main, "other.js");
+	})
+	.then(done, helpers.fail(assert, done));
 });
