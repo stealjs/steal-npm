@@ -153,7 +153,8 @@ asyncTest("Support cloned loader", function(){
 		fileUrl: origDefault.fileUrl,
 		main: origDefault.main,
 		name: origDefault.name,
-		version: origDefault.version
+		version: origDefault.version,
+		resolutions: {}
 	};
 
 	GlobalSystem.normalize(origDefault.name)
