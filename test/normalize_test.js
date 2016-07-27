@@ -37,7 +37,7 @@ QUnit.test("normalizes child package names", function(assert){
 	.then(function(name){
 		assert.equal(name, "child@1.0.0#main", "Normalized to the parent");
 	})
-	.then(done, done);
+	.then(done, helpers.fail(assert, done));
 });
 
 QUnit.test("a package with .js in the name", function(assert){
