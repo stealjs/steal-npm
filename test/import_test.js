@@ -200,6 +200,34 @@ QUnit.test("A project within a node_modules folder", function(assert){
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("Previous packages are included in the package.json!npm source",
+		   function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0"
+		})
+		.loader;
+
+	loader.npmContext = {
+		pkgInfo: [
+			{ name: "some-pkg", main: "main.js", version: "1.0.0", fileUrl: "" }
+		]
+	};
+
+	helpers.init(loader)
+	.then(function(){
+		console.log("here");
+		var load = loader.getModuleLoad("package.json!npm");
+		var hasPkg = load.source.indexOf("some-pkg") !== -1;
+		assert.ok(hasPkg, "the previous packages were applied to the source");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.module("Importing npm modules with tilde operator");
 
 QUnit.test("Import module with the ~ operator", function (assert) {
