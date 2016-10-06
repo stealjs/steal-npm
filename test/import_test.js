@@ -107,6 +107,47 @@ QUnit.test("A project within a node_modules folder", function(assert){
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("Child packages with bundles don't have their bundles added",
+	function(assert){
+	var done = assert.async();
+
+	var appModule = "module.exports = 'bar';";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			system: {
+				bundle: ["app-bundle"]
+			},
+			dependencies: {
+				child: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "child",
+				main: "main.js",
+				version: "1.0.0",
+				system: {
+					bundle: ["child-bundle"]
+				}
+			}
+		])
+		.withModule("app@1.0.0#main", appModule)
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		var bundle = loader.bundle;
+		console.log(bundle);
+		assert.deepEqual(bundle, ["app-bundle"]);
+	})
+	.then(done, helpers.fail(assert, done));
+
+});
+
 QUnit.module("Importing npm modules using 'browser' config");
 
 QUnit.test("Array property value", function(assert){
