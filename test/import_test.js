@@ -141,7 +141,6 @@ QUnit.test("Child packages with bundles don't have their bundles added",
 	helpers.init(loader)
 	.then(function(){
 		var bundle = loader.bundle;
-		console.log(bundle);
 		assert.deepEqual(bundle, ["app-bundle"]);
 	})
 	.then(done, helpers.fail(assert, done));
@@ -151,7 +150,9 @@ QUnit.test("Child packages with bundles don't have their bundles added",
 QUnit.test("`transpiler` config in child pkg is ignored", function(assert){
 	var done = assert.async();
 
-	var appModule = "module.exports = 'bar';";
+	var appModule = "require('another');";
+	var anotherModule = "require('deep');";
+	var deepModule = "module.exports = {};";
 
 	var loader = helpers.clone()
 		.rootPackage({
@@ -159,7 +160,8 @@ QUnit.test("`transpiler` config in child pkg is ignored", function(assert){
 			version: "1.0.0",
 			main: "main.js",
 			dependencies: {
-				child: "1.0.0"
+				child: "1.0.0",
+				another: "1.0.0"
 			}
 		})
 		.withPackages([
@@ -170,14 +172,35 @@ QUnit.test("`transpiler` config in child pkg is ignored", function(assert){
 				system: {
 					transpiler: "other"
 				}
+			},
+			{
+				name: "another",
+				main: "main.js",
+				version: "1.0.0",
+				dependencies: {
+					deep: "1.0.0"
+				}
+			},
+			{
+				name: "deep",
+				main: "main.js",
+				version: "1.0.0",
+				system: {
+					transpiler: "my-thing"
+				}
 			}
 		])
 		.withModule("app@1.0.0#main", appModule)
+		.withModule("another@1.0.0#main", anotherModule)
+		.withModule("deep@1.0.0#main", deepModule)
 		.loader;
 
 	var defaultTranspiler = loader.transpiler;
 
 	helpers.init(loader)
+	.then(function(){
+		return loader["import"]("app");
+	})
 	.then(function(){
 		assert.equal(loader.transpiler, defaultTranspiler, "Transpiler was not changed by child package config");
 	})
