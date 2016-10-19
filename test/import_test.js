@@ -148,6 +148,42 @@ QUnit.test("Child packages with bundles don't have their bundles added",
 
 });
 
+QUnit.test("`transpiler` config in child pkg is ignored", function(assert){
+	var done = assert.async();
+
+	var appModule = "module.exports = 'bar';";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				child: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "child",
+				main: "main.js",
+				version: "1.0.0",
+				system: {
+					transpiler: "other"
+				}
+			}
+		])
+		.withModule("app@1.0.0#main", appModule)
+		.loader;
+
+	var defaultTranspiler = loader.transpiler;
+
+	helpers.init(loader)
+	.then(function(){
+		assert.equal(loader.transpiler, defaultTranspiler, "Transpiler was not changed by child package config");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.module("Importing npm modules using 'browser' config");
 
 QUnit.test("Array property value", function(assert){
