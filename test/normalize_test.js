@@ -485,6 +485,42 @@ QUnit.test("Child config doesn't override root config", function(assert){
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("Browser", function(assert){
+	var done = assert.async();
+	
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			browser: {
+				"./node1": "./browser1",
+				"./node2.js": "./browser2.js",
+				"./node3/index": "./browser3/index"
+			}
+		})
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		return loader.normalize("app/node1");
+	})
+	.then(function(name){
+		assert.equal(name, "app@1.0.0#browser1");
+
+		return loader.normalize("app/node2");
+	})
+	.then(function(name){
+		assert.equal(name, "app@1.0.0#browser2");
+
+		return loader.normalize("app/node3/index");
+	})
+	.then(function(name){
+		assert.equal(name, "app@1.0.0#browser3/index");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 
 QUnit.module("normalizing with main config");
 
