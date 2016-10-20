@@ -60,8 +60,9 @@ exports.makeSource = function(context, pkg){
  */
 exports.configDeps = function(context, pkg){
 	var deps = [];
-	if(pkg.system && pkg.system.configDependencies) {
-		deps = deps.concat(pkg.system.configDependencies);
+	var config = utils.pkg.config(pkg);
+	if(config && config.configDependencies) {
+		deps = deps.concat(config.configDependencies);
 	}
 	if(context.loader.configDependencies) {
 		deps = deps.concat(context.loader.configDependencies);
@@ -124,8 +125,8 @@ var translateConfig = function(loader, packages, options){
 		loader.npmParentMap = options.npmParentMap || {};
 	}
 	var rootPkg = loader.npmPaths.__default = packages[0];
-	var lib = packages[0].system && packages[0].system.directories && packages[0].system.directories.lib;
-
+	var steal = rootPkg.steal || rootPkg.system;
+	var lib = steal && steal.directories && steal.directories.lib;
 
 	var setGlobalBrowser = function(globals, pkg){
 		for(var name in globals) {
@@ -163,23 +164,23 @@ var translateConfig = function(loader, packages, options){
 	};
 	var ignoredConfig = ["bundle", "configDependencies", "transpiler"];
 	forEach(packages, function(pkg){
-		if(pkg.system) {
-			var system = pkg.system;
-			// don't set system.main
-			var main = system.main;
-			delete system.main;
-			var configDeps = system.configDependencies;
+		var steal = pkg.steal || pkg.system;
+		if(steal) {
+			// don't set steal.main
+			var main = steal.main;
+			delete steal.main;
+			var configDeps = steal.configDependencies;
 			if(pkg !== rootPkg) {
 				forEach(ignoredConfig, function(name){
-					delete system[name];
+					delete steal[name];
 				});
 			}
 
-			loader.config(system);
+			loader.config(steal);
 			if(pkg === rootPkg) {
-				system.configDependencies = configDeps;
+				steal.configDependencies = configDeps;
 			}
-			system.main = main;
+			steal.main = main;
 		}
 		if(pkg.globalBrowser) {
 			var doNotApplyGlobalBrowser = pkg.name === "steal" &&
@@ -188,7 +189,7 @@ var translateConfig = function(loader, packages, options){
 				setGlobalBrowser(pkg.globalBrowser, pkg);
 			}
 		}
-		var systemName = system && system.name;
+		var systemName = steal && steal.name;
 		if(systemName) {
 			setInNpm(systemName, pkg);
 		} else {
