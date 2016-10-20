@@ -5,6 +5,7 @@ require("./crawl_test");
 require("./normalize_test");
 require("./import_test");
 require("./load_test");
+require("./locate_test");
 
 var makeIframe = function(src){
 	var iframe = document.createElement('iframe');
@@ -121,7 +122,8 @@ asyncTest("Support cloned loader", function(){
 		fileUrl: origDefault.fileUrl,
 		main: origDefault.main,
 		name: origDefault.name,
-		version: origDefault.version
+		version: origDefault.version,
+		resolutions: {}
 	};
 
 	GlobalSystem.normalize(origDefault.name)

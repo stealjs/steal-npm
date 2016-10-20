@@ -43,7 +43,7 @@ var utils = {
 		for(; i < len; i++) {
 			res = fn.call(arr, arr[i]);
 			if(res) {
-				out.push(res);
+				out.push(arr[i]);
 			}
 		}
 		return out;
@@ -235,12 +235,33 @@ var utils = {
 			// If the module needs to be loaded relative.
 			if(isRelative) {
 				// get the location of the parent
-				var parentParsed = utils.moduleName.parse( parentName, packageName );
+				var parentParsed = utils.moduleName.parse(parentName, packageName);
+
 				// If the parentModule and the currentModule are from the same parent
 				if( parentParsed.packageName === parsedModuleName.packageName && parentParsed.modulePath ) {
-					// Make the path relative to the parentName's path.
-					parsedModuleName.modulePath = utils.path.makeRelative(
-						utils.path.joinURIs(parentParsed.modulePath, parsedModuleName.modulePath) );
+					var makePathRelative = true;
+
+					if(name === "../" || name === "./" || name === "..") {
+						var relativePath = utils.path.relativeTo(
+							parentParsed.modulePath, name);
+						var isInRoot = utils.path.isPackageRootDir(relativePath);
+						if(isInRoot) {
+							parsedModuleName.modulePath = utils.pkg.main(refPkg);
+							makePathRelative = false;
+						} else {
+							parsedModuleName.modulePath = name + 
+								(utils.path.endsWithSlash(name) ? "" : "/") +
+								"index";
+						}
+					} 
+					
+					if(makePathRelative) {
+						// Make the path relative to the parentName's path.
+						parsedModuleName.modulePath = utils.path.makeRelative(
+							utils.path.joinURIs(parentParsed.modulePath,
+												parsedModuleName.modulePath)
+						);
+					}
 				}
 			}
 
@@ -306,7 +327,7 @@ var utils = {
 				utils.path.removePackage( pkg.fileUrl ) :
 				utils.path.pkgDir(pkg.fileUrl);
 
-			var lib = pkg.system && pkg.system.directories && pkg.system.directories.lib;
+			var lib = utils.pkg.directoriesLib(pkg);
 			if(lib) {
 				root = utils.path.joinURIs(utils.path.addEndingSlash(root), lib);
 			}
@@ -369,6 +390,18 @@ var utils = {
 			}
 		},
 		/**
+		 * Finds a dependency by its saved resolutions. This will only be called
+		 * after we've first successful found a package the "hard way" by doing
+		 * semver matching.
+		 */
+		findDep: function(loader, refPkg, name){
+			if(loader.npm && refPkg && !utils.path.startsWithDotSlash(name)) {
+				var nameAndVersion = name + "@" + refPkg.resolutions[name];
+				var pkg = loader.npm[nameAndVersion];
+				return pkg;
+			}
+		},
+		/**
 		 * Walks up npmPaths looking for a [name]/package.json.  Returns
 		 * the package data it finds.
 		 *
@@ -378,7 +411,7 @@ var utils = {
 		 *
 		 * @return {undefined|NpmPackage}
 		 */
-		findDep: function (loader, refPackage, name) {
+		findDepWalking: function (loader, refPackage, name) {
 			if(loader.npm && refPackage && !utils.path.startsWithDotSlash(name)) {
 				// Todo .. first part of name
 				var curPackage = utils.path.depPackageDir(refPackage.fileUrl, name);
@@ -400,11 +433,31 @@ var utils = {
 				return loader.npm[name];
 			}
 		},
+		findByNameAndVersion: function(loader, name, version) {
+			if(loader.npm && !utils.path.startsWithDotSlash(name)) {
+				var nameAndVersion = name + "@" + version;
+				return loader.npm[nameAndVersion];
+			}
+		},
 		findByUrl: function(loader, url) {
 			if(loader.npm) {
 				url = utils.pkg.folderAddress(url);
 				return loader.npmPaths[url];
 			}
+		},
+		directoriesLib: function(pkg) {
+			var system = pkg.system;
+			var lib = system && system.directories && system.directories.lib;
+			var ignores = [".", "/"], ignore;
+			
+			if(!lib) return undefined;
+
+			while(!!(ignore = ignores.shift())) {
+				if(lib[0] === ignore) {
+					lib = lib.substr(1);
+				}
+			}
+			return lib;
 		},
 		hasDirectoriesLib: function(pkg) {
 			var system = pkg.system;
@@ -421,6 +474,11 @@ var utils = {
 				});
 				return out;
 			}
+		},
+		saveResolution: function(context, refPkg, pkg){
+			var npmPkg = utils.pkg.findPackageInfo(context, refPkg);
+			npmPkg.resolutions[pkg.name] = refPkg.resolutions[pkg.name] =
+				pkg.version;
 		}
 	},
 	path: {

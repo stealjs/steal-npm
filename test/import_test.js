@@ -297,63 +297,105 @@ QUnit.test("Import module with the ~ operator with directories.lib", function (a
 		});
 });
 
-/*
-QUnit.test("Import module with the ~ operator in dependencies", function (assert) {
+QUnit.test("Child packages with bundles don't have their bundles added",
+	function(assert){
 	var done = assert.async();
 
-	var runner = helpers.clone()
+	var appModule = "module.exports = 'bar';";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			system: {
+				bundle: ["app-bundle"]
+			},
+			dependencies: {
+				child: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "child",
+				main: "main.js",
+				version: "1.0.0",
+				system: {
+					bundle: ["child-bundle"]
+				}
+			}
+		])
+		.withModule("app@1.0.0#main", appModule)
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		var bundle = loader.bundle;
+		assert.deepEqual(bundle, ["app-bundle"]);
+	})
+	.then(done, helpers.fail(assert, done));
+
+});
+
+QUnit.test("`transpiler` config in child pkg is ignored", function(assert){
+	var done = assert.async();
+
+	var appModule = "require('another');";
+	var anotherModule = "require('deep');";
+	var deepModule = "module.exports = {};";
+
+	var loader = helpers.clone()
 		.rootPackage({
 			name: "app",
 			version: "1.0.0",
 			main: "main.js",
 			dependencies: {
-				"dep1": "1.0.0"
+				child: "1.0.0",
+				another: "1.0.0"
 			}
 		})
 		.withPackages([
 			{
-				name: "dep1",
-				version: "1.0.0",
-				main: "main.js"
-			}
-		])
-		.withModule("dep1@1.0.0#foobar", "module.exports = 'works';")
-		.withModule("dep1@1.0.0#main", "module.exports = require('~/foobar');")
-		.withModule("app@1.0.0#main", "module.exports = require('dep1');");
-
-	var loader = runner.loader;
-
-	loader["import"]("app")
-		.then(function(val){
-			assert.equal(val, 'works', 'load dependency');
-		})
-		.then(done, function(err){
-			assert.ok(!err, err.stack || err);
-		});
-=======
-				name: "dep",
+				name: "child",
 				main: "main.js",
-				version: "1.0.0"
+				version: "1.0.0",
+				system: {
+					transpiler: "other"
+				}
+			},
+			{
+				name: "another",
+				main: "main.js",
+				version: "1.0.0",
+				dependencies: {
+					deep: "1.0.0"
+				}
+			},
+			{
+				name: "deep",
+				main: "main.js",
+				version: "1.0.0",
+				system: {
+					transpiler: "my-thing"
+				}
 			}
 		])
-		.withConfig({
-			baseURL: "http://example.com/node_modules/project/something/else/"
-		})
-		.withModule("main", main)
-		.withModule("dep@1.0.0#main", dep)
+		.withModule("app@1.0.0#main", appModule)
+		.withModule("another@1.0.0#main", anotherModule)
+		.withModule("deep@1.0.0#main", deepModule)
 		.loader;
+
+	var defaultTranspiler = loader.transpiler;
 
 	helpers.init(loader)
 	.then(function(){
-		return loader["import"](loader.main);
+		return loader["import"]("app");
 	})
-	.then(function(val){
-		assert.equal(val, "works", "able to load a project within a node_modules folder");
+	.then(function(){
+		assert.equal(loader.transpiler, defaultTranspiler, "Transpiler was not changed by child package config");
 	})
 	.then(done, helpers.fail(assert, done));
->>>>>>> master
 });
-*/
 
 QUnit.module("Importing npm modules using 'browser' config");
 
