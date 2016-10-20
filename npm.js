@@ -77,9 +77,8 @@ exports.translate = function(load){
 			}
 		});
 
-		var source = npmLoad.makeSource(context, pkg);
-
 		npmLoad.addExistingPackages(context, prevPackages);
+		var source = npmLoad.makeSource(context, pkg);
 
 		return source;
 	});
