@@ -109,7 +109,9 @@ var translateConfig = function(loader, packages, options){
 			browser: true,
 			env: {
 				NODE_ENV: loader.env
-			}
+			},
+			version: '',
+			platform: (navigator && navigator.userAgent && /Windows/.test(navigator.userAgent)) ? "win" : ""
 		};
 	}
 
@@ -159,19 +161,25 @@ var translateConfig = function(loader, packages, options){
 			});
 		}
 	};
+	var ignoredConfig = ["bundle", "configDependencies", "transpiler"];
 	forEach(packages, function(pkg){
 		if(pkg.system) {
+			var system = pkg.system;
 			// don't set system.main
-			var main = pkg.system.main;
-			delete pkg.system.main;
-			var configDeps = pkg.system.configDependencies;
-			delete pkg.system.configDependencies;
-			loader.config(pkg.system);
-			if(pkg === rootPkg) {
-				pkg.system.configDependencies = configDeps;
+			var main = system.main;
+			delete system.main;
+			var configDeps = system.configDependencies;
+			if(pkg !== rootPkg) {
+				forEach(ignoredConfig, function(name){
+					delete system[name];
+				});
 			}
-			pkg.system.main = main;
 
+			loader.config(system);
+			if(pkg === rootPkg) {
+				system.configDependencies = configDeps;
+			}
+			system.main = main;
 		}
 		if(pkg.globalBrowser) {
 			var doNotApplyGlobalBrowser = pkg.name === "steal" &&
@@ -180,7 +188,7 @@ var translateConfig = function(loader, packages, options){
 				setGlobalBrowser(pkg.globalBrowser, pkg);
 			}
 		}
-		var systemName = pkg.system && pkg.system.name;
+		var systemName = system && system.name;
 		if(systemName) {
 			setInNpm(systemName, pkg);
 		} else {
@@ -189,8 +197,8 @@ var translateConfig = function(loader, packages, options){
 		if(!loader.npm[pkg.name]) {
 			loader.npm[pkg.name] = pkg;
 		}
-		loader.npm[pkg.name+"@"+pkg.version] = pkg;
-		var pkgAddress = pkg.fileUrl.replace(/\/package\.json.*/,"");
+		loader.npm[pkg.name + "@" + pkg.version] = pkg;
+		var pkgAddress = pkg.fileUrl.replace(/\/package\.json.*/, "");
 		loader.npmPaths[pkgAddress] = pkg;
 	});
 	forEach(loader._npmExtensions || [], function(ext){

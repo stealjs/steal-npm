@@ -68,9 +68,12 @@ function convertSystem(context, pkg, system, root, ignoreWaiting) {
 				info.system = config;
 			}
 
+			// Temporarily remove system.main so that it doesn't set System.main
+			var systemMain = config.main;
 			delete config.main;
 			delete config.transpiler;
 			context.loader.config(config);
+			config.main = systemMain;
 		});
 	}
 
@@ -298,7 +301,8 @@ function convertToPackage(context, pkg, index) {
 			globalBrowser: convertBrowser(pkg, pkg.globalBrowser),
 			browser: convertBrowser(pkg, pkg.browser || pkg.browserify),
 			jspm: convertJspm(pkg, pkg.jspm),
-			jam: convertJspm(pkg, pkg.jam)
+			jam: convertJspm(pkg, pkg.jam),
+			resolutions: {}
 		};
 		packages.push(localPkg);
 		packages[nameAndVersion] = true;
