@@ -7,7 +7,7 @@
 	},
 	"system": {
 		"map": {
-			"can": "./can"
+			"can": "mod#can"
 		}
 	}
 }

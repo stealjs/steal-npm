@@ -444,6 +444,48 @@ QUnit.test("normalizes in production when there is a dep in a parent node_module
 
 });
 
+QUnit.test("Child config doesn't override root config", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			steal: {
+				ext: {
+					foo: "bar"
+				}
+			},
+			dependencies: {
+				child: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "child",
+				version: "1.0.0",
+				main: "main.js",
+				steal: {
+					ext: {
+						foo: "qux"
+					}
+				}
+			}
+		])
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		return loader.normalize("./mod.foo", "app@1.0.0#main");
+	})
+	.then(function(name){
+		assert.equal(name, "app@1.0.0#mod.foo!bar", "uses the ext config from the root package");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
+
 QUnit.module("normalizing with main config");
 
 var mainVariations = {

@@ -55,7 +55,7 @@ asyncTest("Loads globals", function(){
 
 
 asyncTest("meta", function(){
-	GlobalSystem["import"]("test/meta").then(function(meta){
+	GlobalSystem["import"]("~/test/meta").then(function(meta){
 		equal(meta,"123", "got 123");
 	}).then(start);
 });
@@ -81,14 +81,14 @@ asyncTest("jquery-ui", function(){
 
 asyncTest("import self", function(){
 	GlobalSystem.globalBrowser = {
-		"system-npm": "system-npm"
+		"steal-npm": "steal-npm"
 	};
 	Promise.all([
-		GlobalSystem["import"]("system-npm"),
-		GlobalSystem["import"]("system-npm/test/meta")
+		GlobalSystem["import"]("steal-npm"),
+		GlobalSystem["import"]("steal-npm/test/meta")
 	]).then(function(mods){
 		equal(mods[0], "example-main", "example-main");
-		equal(mods[1], "123", "system-npm/test/meta");
+		equal(mods[1], "123", "steal-npm/test/meta");
 	}).then(start);
 });
 
