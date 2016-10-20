@@ -211,9 +211,10 @@ exports.addExtension = function(System){
 			}
 			var moduleName = utils.moduleName.create(parsedModuleName);
 			// Apply mappings, if they exist in the refPkg
-			if(refPkg.system && refPkg.system.map &&
-			   typeof refPkg.system.map[moduleName] === "string") {
-				moduleName = refPkg.system.map[moduleName];
+			var steal = utils.pkg.config(refPkg);
+			if(steal && steal.map &&
+			   typeof steal.map[moduleName] === "string") {
+				moduleName = steal.map[moduleName];
 			}
 			var p = oldNormalize.call(loader, moduleName, parentName,
 									  parentAddress, pluginNormalize);

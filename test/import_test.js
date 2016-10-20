@@ -228,6 +228,51 @@ QUnit.test("Previous packages are included in the package.json!npm source",
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("Configuration can be put on the 'steal' object in package.json",
+	function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			steal: {
+				foo: "bar"
+			}
+		})
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		assert.equal(loader.foo, "bar", "using steal as config works");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
+QUnit.test("Configuration can be put on the 'system' object in package.json",
+	function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			system: {
+				foo: "bar"
+			}
+		})
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		assert.equal(loader.foo, "bar", "using steal as config works");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
+
 QUnit.module("Importing npm modules with tilde operator");
 
 QUnit.test("Import module with the ~ operator", function (assert) {

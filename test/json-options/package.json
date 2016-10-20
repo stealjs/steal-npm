@@ -9,7 +9,7 @@
 		"./util" : "./browser_util",
 		"transform": []
 	},
-	"system": {
+	"steal": {
 		"ignoreBrowser": true
 	},
 	"foo": "bar"

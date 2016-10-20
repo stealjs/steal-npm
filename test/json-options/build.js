@@ -22,9 +22,9 @@ var promise = stealTools.build({
 			 * but we can filter out these configs, if necessary...
 			 */
 
-			if(json.system && json.system.ignoreBrowser === true){
+			if(json.steal && json.steal.ignoreBrowser === true){
 				delete json.browser;
-				delete json.system.ignoreBrowser;
+				delete json.steal.ignoreBrowser;
 			}
 
 			return json;

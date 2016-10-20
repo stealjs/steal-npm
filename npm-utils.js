@@ -268,17 +268,23 @@ var utils = {
 			// we have the moduleName without the version
 			// we check this against various configs
 			var mapName = utils.moduleName.create(parsedModuleName),
+				refSteal = utils.pkg.config(refPkg),
 			    mappedName;
 
 			// The refPkg might have a browser [https://github.com/substack/node-browserify#browser-field] mapping.
 			// Perform that mapping here.
-			if(refPkg.browser && (typeof refPkg.browser !== "string") && (mapName in refPkg.browser)  && (!refPkg.system || !refPkg.system.ignoreBrowser)) {
-				mappedName = refPkg.browser[mapName] === false ? "@empty" : refPkg.browser[mapName];
+			if(refPkg.browser && (typeof refPkg.browser !== "string") &&
+			   (mapName in refPkg.browser) &&
+				   (!refSteal || !refSteal.ignoreBrowser)) {
+				mappedName = refPkg.browser[mapName] === false ?
+					"@empty" : refPkg.browser[mapName];
 			}
 			// globalBrowser looks like: {moduleName: aliasName, pgk: aliasingPkg}
-			var global = loader && loader.globalBrowser && loader.globalBrowser[mapName];
+			var global = loader && loader.globalBrowser &&
+				loader.globalBrowser[mapName];
 			if(global) {
-				mappedName = global.moduleName === false ? "@empty" : global.moduleName;
+				mappedName = global.moduleName === false ? "@empty" :
+					global.moduleName;
 			}
 
 			if(mappedName) {
@@ -298,12 +304,14 @@ var utils = {
 		 * @return {String}
 		 */
 		name: function(pkg){
-			return (pkg.system && pkg.system.name) || pkg.name;
+			var steal = utils.pkg.config(pkg);
+			return (steal && steal.name) || pkg.name;
 		},
 		main: function(pkg) {
 			var main;
-			if(pkg.system && pkg.system.main) {
-				main = pkg.system.main;
+			var steal = utils.pkg.config(pkg);
+			if(steal && steal.main) {
+				main = steal.main;
 			} else if(typeof pkg.browser === "string") {
 				if(utils.path.endsWithSlash(pkg.browser)) {
 					main = pkg.browser + "index";
@@ -446,8 +454,8 @@ var utils = {
 			}
 		},
 		directoriesLib: function(pkg) {
-			var system = pkg.system;
-			var lib = system && system.directories && system.directories.lib;
+			var steal = utils.pkg.config(pkg);
+			var lib = steal && steal.directories && steal.directories.lib;
 			var ignores = [".", "/"], ignore;
 			
 			if(!lib) return undefined;
@@ -460,8 +468,8 @@ var utils = {
 			return lib;
 		},
 		hasDirectoriesLib: function(pkg) {
-			var system = pkg.system;
-			return system && system.directories && !!system.directories.lib;
+			var steal = utils.pkg.config(pkg);
+			return steal && steal.directories && !!steal.directories.lib;
 		},
 		findPackageInfo: function(context, pkg){
 			var pkgInfo = context.pkgInfo;
@@ -479,6 +487,9 @@ var utils = {
 			var npmPkg = utils.pkg.findPackageInfo(context, refPkg);
 			npmPkg.resolutions[pkg.name] = refPkg.resolutions[pkg.name] =
 				pkg.version;
+		},
+		config: function(pkg){
+			return pkg.steal || pkg.system;
 		}
 	},
 	path: {

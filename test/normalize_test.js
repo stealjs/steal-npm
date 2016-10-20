@@ -447,6 +447,11 @@ QUnit.test("normalizes in production when there is a dep in a parent node_module
 QUnit.module("normalizing with main config");
 
 var mainVariations = {
+	"steal.main": function(pkg){
+		pkg.steal = {
+			main: "bar"
+		};
+	},
 	"system.main": function(pkg){
 		pkg.system = {
 			main: "bar"
@@ -522,7 +527,7 @@ Object.keys(mainVariations).forEach(function(testName){
 	});
 });
 
-QUnit.test("A package's system.main is retained when loading dependant packages", function(assert){
+QUnit.test("A package's steal.main is retained when loading dependant packages", function(assert){
 	var done = assert.async();
 
 	var loader = helpers.clone()
@@ -566,7 +571,7 @@ QUnit.test("A package's system.main is retained when loading dependant packages"
 	.then(function(name){
 		var pkgs = loader.npmContext.pkgInfo;
 		var pkg = utils.filter(pkgs, function(p) { return p.name === "parent" })[0];
-		assert.equal(pkg.system.main, "other.js");
+		assert.equal(pkg.steal.main, "other.js");
 	})
 	.then(done, helpers.fail(assert, done));
 });
