@@ -220,7 +220,6 @@ QUnit.test("Previous packages are included in the package.json!npm source",
 
 	helpers.init(loader)
 	.then(function(){
-		console.log("here");
 		var load = loader.getModuleLoad("package.json!npm");
 		var hasPkg = load.source.indexOf("some-pkg") !== -1;
 		assert.ok(hasPkg, "the previous packages were applied to the source");
@@ -271,7 +270,6 @@ QUnit.test("Configuration can be put on the 'system' object in package.json",
 	})
 	.then(done, helpers.fail(assert, done));
 });
-
 
 QUnit.module("Importing npm modules with tilde operator");
 
