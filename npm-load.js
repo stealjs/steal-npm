@@ -103,6 +103,7 @@ var translateConfig = function(loader, packages, options){
 	var g = loader.global;
 	if(!g.process) {
 		g.process = {
+			argv: [],
 			cwd: function(){
 				var baseURL = loader.baseURL;
 				return baseURL;

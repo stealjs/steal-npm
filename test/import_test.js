@@ -271,6 +271,29 @@ QUnit.test("Configuration can be put on the 'system' object in package.json",
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("Works with modules that use process.argv", function(assert){
+	var done = assert.async();
+	var mainModule = "module.exports = process.argv.indexOf('foo') === -1";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js"
+		})
+		.withModule("app@1.0.0#main", mainModule)
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		return loader["import"](loader.main);
+	})
+	.then(function(main){
+		assert.equal(main, true, "it loaded");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.module("Importing npm modules with tilde operator");
 
 QUnit.test("Import module with the ~ operator", function (assert) {
