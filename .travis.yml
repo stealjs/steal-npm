@@ -9,4 +9,4 @@ before_install:
 script: npm test
 sudo: false
 addons:
-  firefox: "43.0"
+  firefox: "50.0"
