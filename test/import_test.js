@@ -207,6 +207,47 @@ QUnit.test("`transpiler` config in child pkg is ignored", function(assert){
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("'resolutions' config is preserved", function(assert){
+	var done = assert.async();
+
+	var appModule = "module.exports = 'worked';";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			dependencies: {
+				"dep": "1.0.0"
+			}
+		})
+		.withPackages([{
+			name: "dep",
+			main: "main.js",
+			version: "1.0.0"
+		}])
+		.loader;
+
+	loader.npmContext = {
+		pkgInfo: [
+			{name:"dep",main:"main.js",version:"1.0.0", resolutions: {
+				other: "1.0.0"
+			}}
+		]
+	};
+	loader.npmContext.pkgInfo["dep@1.0.0"] = true;
+
+	helpers.init(loader)
+	.then(function(){
+		let pkg = utils.filter(loader.npmContext.pkgInfo, function(pkg){
+			return pkg.name === "dep" && pkg.version === "1.0.0";
+		})[0];
+		assert.equal(pkg.resolutions.other, "1.0.0");
+	})
+	.then(done, helpers.fail(assert, done));
+	
+});
+
 QUnit.module("Importing npm modules using 'browser' config");
 
 QUnit.test("Array property value", function(assert){
