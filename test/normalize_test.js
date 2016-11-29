@@ -203,6 +203,88 @@ QUnit.test("Configures a package when conflicting package.jsons are progressivel
 	.then(done, done);
 });
 
+QUnit.test("Progressively loaded configuration in the pluginLoader during the build is applied to the localLoader as well", function(assert){
+	var done = assert.async();
+
+	var pluginLoader = helpers.clone()
+		.npmVersion(3)
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				one: "1.0.0"
+			}
+		})
+		.withPackages([
+			new Package({
+				name: "one",
+				version: "1.0.0",
+				main: "main.js",
+				dependencies: {
+					two: "1.0.0"
+				}
+			}).deps([
+				{
+					name: "two",
+					version: "1.0.0",
+					main: "main.js"
+				}
+			])
+		])
+		.loader;
+
+	var localLoader = helpers.clone()
+		.npmVersion(3)
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				one: "1.0.0"
+			}
+		})
+		.withPackages([
+			new Package({
+				name: "one",
+				version: "1.0.0",
+				main: "main.js",
+				dependencies: {
+					two: "1.0.0"
+				}
+			}).deps([
+				{
+					name: "two",
+					version: "1.0.0",
+					main: "main.js"
+				}
+			])
+		])
+		.loader;
+
+	// Set this as the localLoader, like steal-tools does.
+	pluginLoader.localLoader = localLoader;
+
+	Promise.all([
+		helpers.init(pluginLoader),
+		helpers.init(localLoader)
+	])
+	.then(function(){
+		pluginLoader.npmContext.resavePackageInfo = true;
+		return pluginLoader.normalize("one", "app@1.0.0#main");
+	})
+	.then(function(){
+		return pluginLoader.normalize("two", "one@1.0.0#main");
+	})
+	.then(function(){
+		// At this point the configuration should have been copied over.
+		var load = localLoader.getModuleLoad("package.json!npm");
+		var hasTwo = load.source.indexOf('"name": "two"') !== -1;
+		assert.ok(hasTwo, "'two' was loaded in the pluginLoader and its configuration was copied over to the localLoader");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.test("Loads npm convention of folder with trailing slash", function(assert){
 	var done = assert.async();
 
