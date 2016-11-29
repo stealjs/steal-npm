@@ -21,14 +21,40 @@ var crawl = {
 		return pkg;
 	},
 	/**
+	 * Crawl from the root, only fetching Steal and its dependencies so
+	 * that Node built-ins are autoconfigured.
+	 */
+	root: function(context, pkg){
+		var deps = crawl.getDependencies(context.loader, pkg, true);
+
+		var stealPkg = utils.filter(deps, function(dep){
+			return dep && dep.name === "steal";
+		})[0];
+
+		debugger;
+
+		if(stealPkg) {
+			return crawl.fetchDep(context, pkg, stealPkg, true)
+			.then(function(childPkg){
+				if(childPkg) {
+					return crawl.deps(context, childPkg)
+					.then(function(packages){
+						return [childPkg].concat(packages);
+					});
+				}
+			});
+		} else {
+			return Promise.resolve([]);
+		}
+	},
+	/**
 	 * Crawls the packages dependencies
 	 * @param {Object} context
 	 * @param {NpmPackage} pkg
-	 * @param {Boolean} [isRoot] If the root module's dependencies shoudl be crawled.
+	 * @param {Boolean} [isRoot] If the root module's dependencies should be crawled.
 	 * @return {Promise} A promise when all packages have been loaded
 	 */
 	deps: function(context, pkg, isRoot) {
-	
 		var deps = crawl.getDependencies(context.loader, pkg, isRoot);
 
 		return Promise.all(utils.filter(utils.map(deps, function(childPkg){

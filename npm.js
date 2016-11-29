@@ -45,6 +45,8 @@ exports.translate = function(load){
 	this.npmContext = context;
 	var pkg = {origFileUrl: load.address, fileUrl: utils.relativeURI(loader.baseURL, load.address)};
 	crawl.processPkgSource(context, pkg, load.source);
+	var pkgVersion = context.versions[pkg.name] = {};
+	pkgVersion[pkg.version] = pkg;
 
 	// backwards compatible for < npm 3
 	var steal = utils.pkg.config(pkg);
@@ -55,7 +57,7 @@ exports.translate = function(load){
 		steal.npmAlgorithm = "flat";
 	}
 
-	return crawl.deps(context, pkg, true).then(function(){
+	return crawl.root(context, pkg, true).then(function(){
 		// clean up packages so everything is unique
 		var names = {};
 		var packages = context.pkgInfo = [];

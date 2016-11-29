@@ -148,7 +148,13 @@ QUnit.test("Can load two separate versions of same package", function(assert){
 		])
 		.loader;
 
-	loader.normalize("set", "fixture@1.0.0#main")
+	helpers.init(loader)
+	.then(function(){
+		return loader.normalize("fixture", "parent@1.0.0#main");
+	})
+	.then(function(){
+		return loader.normalize("set", "fixture@1.0.0#main");
+	})
 	.then(function(name){
 		assert.equal(name, "set@3.0.4#main", "Got the correct version of set");
 	})
@@ -196,7 +202,13 @@ QUnit.test("Configures a package when conflicting package.jsons are progressivel
 		])
 		.loader;
 
-	loader.normalize("focha", "steal-focha@1.0.0#main")
+	helpers.init(loader)
+	.then(function(){
+		return loader.normalize("steal-focha", "app@1.0.0");
+	})
+	.then(function(){
+		return loader.normalize("focha", "steal-focha@1.0.0#main");
+	})
 	.then(function(name){
 		assert.equal(name, "focha@2.0.0#other", "config applied");
 	})
@@ -306,6 +318,9 @@ QUnit.test("Loads npm convention of folder with trailing slash", function(assert
 
 	helpers.init(loader)
 	.then(function(){
+		return loader.normalize("dep", "app@1.0.0#main");
+	})
+	.then(function(){
 		// Relative to a nested module
 		return loader.normalize("./", "dep@1.0.0#folder/deep/mod")
 	})
@@ -389,7 +404,16 @@ QUnit.test("Race conditions in loading deps are resolved", function(assert){
 		])
 		.loader;
 
-	loader.normalize("dep2", "dep1@1.0.0#index")
+	helpers.init(loader)
+	.then(function(){
+		return Promise.all([
+			loader.normalize("dep1", "app@1.0.0#main"),
+			loader.normalize("dep3", "app@1.0.0#main")
+		]);
+	})
+	.then(function(){
+		return loader.normalize("dep2", "dep1@1.0.0#index");
+	})
 	.then(function(name){
 		var one = loader.normalize("dep3", "dep1@1.0.0#index")
 			.then(function(name){
@@ -444,8 +468,13 @@ QUnit.test("Normalizing a package that refers to itself", function(assert){
 		])
 		.loader;
 
-	// 
-	loader.normalize("connect", "dep@1.0.0#main")
+	helpers.init(loader)
+	.then(function(){
+		return loader.normalize("dep", "app@1.0.0#main");
+	})
+	.then(function(){
+		return loader.normalize("connect", "dep@1.0.0#main");
+	})
 	.then(function(){
 		return loader.normalize("connect/foo/bar", "connect@2.0.0#main")
 	}).then(function(name){
@@ -502,6 +531,12 @@ QUnit.test("normalizes in production when there is a dep in a parent node_module
 		.loader;
 
 	helpers.init(loader)
+	.then(function(){
+		return Promise.all([
+			loader.normalize("a", "app@1.0.0#main"),
+			loader.normalize("b", "app@1.0.0#main")
+		]);
+	})
 	.then(function(){
 		// First normalize a's "c", which is the same that b needs.
 		return loader.normalize("c", "a@1.0.0#main");
@@ -679,7 +714,13 @@ Object.keys(mainVariations).forEach(function(testName){
 			])
 			.loader;
 
-		loader.normalize("deep", "child@1.0.0#main")
+		helpers.init(loader)
+		.then(function(){
+			return loader.normalize("child", "parent@1.0.0#main");
+		})
+		.then(function(){
+			return loader.normalize("deep", "child@1.0.0#main");
+		})
 		.then(function(name){
 			assert.equal(name, "deep@1.0.0#" + modulePath, "Correctly normalized");
 		})
@@ -723,6 +764,9 @@ QUnit.test("A package's steal.main is retained when loading dependant packages",
 		.loader;
 
 	helpers.init(loader)
+	.then(function(){
+		return loader.normalize("parent", "app@1.0.0#main");
+	})
 	.then(function(){
 		loader.npmContext.resavePackageInfo = true;
 
