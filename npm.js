@@ -27,6 +27,7 @@ exports.translate = function(load){
 	var prevPackages = loader.npmContext && loader.npmContext.pkgInfo;
 	var context = {
 		packages: [],
+		pkgInfo: [],
 		loader: this,
 		// places we load package.jsons from
 		paths: {},
@@ -60,7 +61,7 @@ exports.translate = function(load){
 	return crawl.root(context, pkg, true).then(function(){
 		// clean up packages so everything is unique
 		var names = {};
-		var packages = context.pkgInfo = [];
+		var packages = context.pkgInfo;
 		utils.forEach(context.packages, function(pkg, index){
 			if(!packages[pkg.name+"@"+pkg.version]) {
 				if(pkg.browser){
