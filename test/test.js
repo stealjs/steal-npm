@@ -156,10 +156,6 @@ asyncTest("github ranges as requested versions are matched", function(){
 	makeIframe("git_ranges/dev.html");
 });
 
-asyncTest("support an alternate name for npm modules", function(){
-	makeIframe("alt_name/dev.html");
-});
-
 asyncTest("works with packages that have multiple versions of the same dependency", function(){
 	makeIframe("mult_dep/dev.html");
 });
@@ -182,10 +178,6 @@ asyncTest("configDependencies combined from loader and pkg.system", function(){
 
 asyncTest("Converting name of git versions works", function(){
 	makeIframe("git_config/dev.html");
-});
-
-asyncTest("local mappings are applied in normalize", function(){
-	makeIframe("map_same/dev.html");
 });
 
 asyncTest("contextual maps work", function(){
@@ -244,19 +236,6 @@ asyncTest("peerDependencies are matched against parent that has a matching versi
 
 asyncTest("Able to load dependencies using /index convention", function(){
 	makeIframe("folder_index/dev.html");
-});
-
-asyncTest("canjs", function(){
-	Promise.all([
-		GlobalSystem["import"]("can"),
-		GlobalSystem["import"]("can/control/control")
-	]).then(function(mods){
-		var can = mods[0],
-			Control = mods[1];
-		ok(Control.extend, "Control has an extend method");
-		ok(can.Control.extend, "control");
-	}).then(start);
-
 });
 
 asyncTest("load in a webworker", function(){

@@ -26,26 +26,32 @@ var crawl = {
 	 */
 	root: function(context, pkg){
 		var deps = crawl.getDependencies(context.loader, pkg, true);
+		var plugins = utils.filter(utils.map(crawl.getPlugins(pkg), function(pluginName){
+			return utils.filter(deps, function(depPkg){
+				return depPkg.name === pluginName;
+			})[0];
+		}), truthy);
 
 		var stealPkg = utils.filter(deps, function(dep){
 			return dep && dep.name === "steal";
 		})[0];
 
-		debugger;
-
 		if(stealPkg) {
-			return crawl.fetchDep(context, pkg, stealPkg, true)
-			.then(function(childPkg){
-				if(childPkg) {
-					return crawl.deps(context, childPkg)
-					.then(function(packages){
-						return [childPkg].concat(packages);
-					});
-				}
-			});
-		} else {
-			return Promise.resolve([]);
+			plugins = [stealPkg].concat(plugins);
 		}
+
+		return Promise.all(utils.filter(utils.map(plugins, function(childPkg){
+			return crawl.fetchDep(context, pkg, childPkg, true);
+		}), truthy)).then(function(packages){
+			return Promise.all(utils.map(packages, function(childPkg){
+				// Also load 'steal' so that the builtins will be configured
+				if(childPkg && childPkg.name === 'steal') {
+					return crawl.deps(context, childPkg);
+				}
+			})).then(function(){
+				return packages;
+			});
+		});
 	},
 	/**
 	 * Crawls the packages dependencies
@@ -225,6 +231,10 @@ var crawl = {
 
 		return deps;
 	},
+	getPlugins: function(packageJSON) {
+		var config = utils.pkg.config(packageJSON) || {};
+		return config.plugins || [];
+	},
 	isSameRequestedVersionFound: function(context, childPkg) {
 		if(!context.versions[childPkg.name]) {
 			context.versions[childPkg.name] = {};
@@ -274,8 +284,9 @@ var crawl = {
 		var versions = context.versions[packageName], pkg;
 		for(v in versions) {
 			pkg = versions[v];
-			if(SemVer.valid(pkg.version) &&
-			   SemVer.satisfies(pkg.version, requestedVersion)) {
+			if((SemVer.valid(pkg.version) &&
+			   SemVer.satisfies(pkg.version, requestedVersion)) ||
+			   utils.isGitUrl(requestedVersion)) {
 				return pkg;
 			}
 		}
