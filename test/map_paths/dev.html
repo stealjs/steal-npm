@@ -18,8 +18,12 @@
 		}
 
 		System.import("package.json!npm").then(function(){
+			return System.normalize("dep");
+		}).then(function(){
 			if(hasQUnit()) {
 				QUnit.equal(System.paths["dep@1.2.2#other"], "other.js");
+			} else {
+				console.log(System.paths["dep@1.2.2#other"]);
 			}
 
 			System.config({
@@ -36,6 +40,9 @@
 				QUnit.equal(System.paths["dep@1.2.2#main"], "util.js");
 			
 				removeMyself();
+			} else {
+				console.log(System.map["dep@1.2.2#dep"],
+					System.paths["dep@1.2.2#main"]);
 			}
 		}).then(null, function(err){
 			console.error("Oh no, error!", err);

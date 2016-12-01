@@ -486,7 +486,8 @@ QUnit.test("'resolutions' config is preserved", function(assert){
 
 	loader.npmContext = {
 		pkgInfo: [
-			{name:"dep",main:"main.js",version:"1.0.0", resolutions: {
+			{name:"dep",main:"main.js",version:"1.0.0", fileUrl: "node_modules/dep/package.json",
+			resolutions: {
 				other: "1.0.0"
 			}}
 		]
@@ -494,6 +495,9 @@ QUnit.test("'resolutions' config is preserved", function(assert){
 	loader.npmContext.pkgInfo["dep@1.0.0"] = true;
 
 	helpers.init(loader)
+	.then(function(){
+		return loader.normalize("dep", "app@1.0.0#main");
+	})
 	.then(function(){
 		let pkg = utils.filter(loader.npmContext.pkgInfo, function(pkg){
 			return pkg.name === "dep" && pkg.version === "1.0.0";
@@ -667,59 +671,6 @@ QUnit.test("Doesn't retry the forward slash convention in production", function(
 });
 
 QUnit.module("Importing globalBrowser config");
-
-QUnit.test("Correctly imports globalBrowser package that is depended on by another", function(assert){
-	var done = assert.async();
-
-	var loader = helpers.clone()
-		.rootPackage({
-			name: "app",
-			version: "1.0.0",
-			main: "main.js",
-			dependencies: {
-				"dep": "1.0.0",
-				"steal-builtins": "1.0.0"
-			}
-		})
-		.withPackages([
-			{
-				name: "steal-builtins",
-				main: "main.js",
-				version: "1.0.0",
-				globalBrowser: {
-					"readline": "./thing",
-					"http": "http"
-				},
-				dependencies: {
-					"http": "0.10.0"
-				}
-			},
-			{
-				name: "dep",
-				version: "1.0.0",
-				main: "main.js"
-			},
-			{
-				name: "http",
-				version: "0.10.0",
-				main: "main.js"
-			}
-		])
-		.withModule("http@0.10.0#main", "module.exports = 'http';")
-		.withModule("steal-builtins@1.0.0#thing", "module.exports = require('http');")
-		.withModule("dep@1.0.0#main", "module.exports = require('readline');")
-		.withModule("app@1.0.0#main", "module.exports = require('dep');")
-		.loader;
-
-	
-	loader["import"]("app")
-		.then(function(val){
-			assert.equal(val, "http", "correctly got the http module");
-		})
-		.then(done, function(err){
-			assert.ok(!err, err.stack || err);
-		});
-});
 
 QUnit.test("Builtins are ignored with builtins: false", function(assert){
 	var done = assert.async();
