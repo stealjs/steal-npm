@@ -662,6 +662,7 @@ QUnit.test("Config applied before normalization will be reapplied after", functi
 	helpers.init(loader)
 	.then(function(){
 		// The build applies config after configMain loads
+		loader.npmContext.resavePackageInfo = true;
 		loader.config({
 			map: {
 				dep: "dep/build"
@@ -672,6 +673,9 @@ QUnit.test("Config applied before normalization will be reapplied after", functi
 	})
 	.then(function(name){
 		assert.equal(name, "dep@1.0.0#build");
+
+		var pkg = loader.npmContext.pkgInfo[0];
+		assert.ok(!pkg.steal.map, "The map shoulded be applied to what saved into the build artifact");
 	})
 	.then(done, helpers.fail(assert, done));
 });
