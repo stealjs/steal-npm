@@ -638,6 +638,44 @@ QUnit.test("Browser", function(assert){
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("Config applied before normalization will be reapplied after", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			dependencies: {
+				dep: "1.0.0"
+			}
+		})
+		.withPackages([
+			{
+				name: "dep",
+				main: "main.js",
+				version: "1.0.0"
+			}
+		])
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		// The build applies config after configMain loads
+		loader.config({
+			map: {
+				dep: "dep/build"
+			}
+		});
+
+		return loader.normalize("dep", "app@1.0.0#main");
+	})
+	.then(function(name){
+		assert.equal(name, "dep@1.0.0#build");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 
 QUnit.module("normalizing with main config");
 
