@@ -25,7 +25,7 @@
 			if(hasQUnit()) {
 				QUnit.equal(window.DEP, "this is a config dep");
 				QUnit.notEqual(System.configDependencies[0], "my-dep", "An npm dependency's configDependencies should not be part of the configDependencies array.");
-				QUnit.ok(rootPkg.system.configDependencies, "there are config deps in the pkg");
+				QUnit.ok(rootPkg.steal.configDependencies, "there are config deps in the pkg");
 			} else {
 				console.log(window.DEP);
 			}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+	<title>SystemJS tests</title>
+</head>
+<body>
+<script>
+	window.QUnit = window.parent.QUnit;
+	window.removeMyself = window.parent.removeMyself;
+</script>
+<script>
+	var steal = {
+		paths: {
+			"npm": "../../npm.js",
+			"npm-utils": "../../npm-utils.js",
+			"npm-extension": "../../npm-extension.js",
+			"npm-crawl": "../../npm-crawl.js",
+			"npm-load": "../../npm-load.js",
+			"npm-convert": "../../npm-convert.js",
+			"semver": "../../semver.js",
+			"@traceur": "../../node_modules/steal/ext/traceur.js",
+			"css": "../../node_modules/steal/ext/css.js"
+		},
+		jsonOptions: {
+			transform: function(load, json) {
+				if(json.fileUrl === "./package.json" && json.name === 'npm-app') {
+					delete json.foo;
+				}
+				for (var prop in json) {
+					if(prop[0] === '_') {
+						delete json[prop];
+					}
+				}
+
+				return json;
+			}
+		}
+	}
+</script>
+<script src="../../node_modules/steal/steal.js"
+		config="package.json!npm"></script>
+</body>
+</html>

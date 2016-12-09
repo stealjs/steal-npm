@@ -1,6 +1,6 @@
-# system-npm
+# steal-npm
 
-[![Build Status](https://travis-ci.org/stealjs/system-npm.svg?branch=master)](https://travis-ci.org/stealjs/system-npm)
+[![Build Status](https://travis-ci.org/stealjs/steal-npm.svg?branch=master)](https://travis-ci.org/stealjs/steal-npm)
 
 This is a plugin for [StealJS](http://stealjs.com/) that makes it easy to work with [npm](https://www.npmjs.com/).
 
@@ -14,7 +14,7 @@ If you're using StealJS you don't have have to install this plugin, it's include
 
 ## Configuration
 
-All of the configuration happens within the `system` property of your `package.json`.
+All of the configuration happens within the `steal` property of your `package.json`.
 
 ### main
 
@@ -25,7 +25,7 @@ a `System.map` setting. For example:
 {
   "name": "my-module",
   "version": "1.2.3",
-  "system": {
+  "steal": {
     "main": "my-main"
   }
 }
@@ -46,7 +46,7 @@ Example:
 
 ```js
 {
-  "system": {
+  "steal": {
     "meta": {
       "./src/utils": {"format": "amd"},
       "jquery": {"format": "global"},
@@ -72,7 +72,7 @@ dependencies will be loaded:
   "devDependencies": {
     "steal-tools": "0.5.0"
   },
-  "system": {
+  "steal": {
     "npmIgnore": ["devDependencies","cssify"]
   }
 }
@@ -94,7 +94,7 @@ Like `npmIgnore` but affirmative. If used alone will only include the dependenci
     "one": "1.0.0",
 	"two": "1.0.0"
   },
-  "system": {
+  "steal": {
     "npmDependencies": [ "one" ]
   }
 }
@@ -108,7 +108,7 @@ Set to true to ignore browserfy's `"browser"` and `"browserify"` configurations.
 
 ```js
 {
-  "system": {
+  "steal": {
     "ignoreBrowser": true
   }
 }
@@ -125,7 +125,7 @@ In the following setup, `"my-project/my-utils"` will be looked for in
 ```js
 {
   "name": "my-project"
-  "system": {
+  "steal": {
     "directories" : {
       "lib" : "src"
     }
