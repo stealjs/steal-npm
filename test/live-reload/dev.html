@@ -42,7 +42,7 @@
 
 					doInstall().then(doChangeMain).then(function(){
 						// main should be right;
-						var main = System.get("main")["default"];
+						var main = System.get(System.main)["default"];
 						if(window.QUnit) {
 							QUnit.ok(main.fn.jquery, "jquery it is!");
 						} else {

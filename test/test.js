@@ -4,6 +4,7 @@ require("./utils_test");
 require("./crawl_test");
 require("./normalize_test");
 require("./import_test");
+require("./load_test");
 require("./locate_test");
 
 var makeIframe = function(src){
@@ -46,38 +47,6 @@ asyncTest("crawl.getDependencyMap", function(){
 
 });
 
-asyncTest("transpile works", function(){
-	Promise.all([
-		System["import"]("transpile"),
-		System["import"]("jquery")
-	]).then(function(res){
-		var transpile = res[0],
-			$ = res[1];
-
-		equal(typeof transpile, "object", "object returned");
-		equal(typeof $, "function", "function returned");
-
-		return new Promise(function(resolve, reject){
-
-				$.ajax("../node_modules/transpile/test/tests/es6.js",{dataType: "text"}).then(function(data){
-					var res = transpile.to({
-						source: ""+data,
-						address: "../node_modules/transpile/test/tests/es6.js",
-						name: "tests/es6",
-						metadata: {format: "es6"}
-					}, "cjs");
-
-					return $.ajax("../node_modules/transpile/test/tests/expected/es6_cjs.js",{dataType: "text"})
-						.then(function(answer){
-							QUnit.equal(answer, res);
-					});
-
-				}, reject).then(resolve, reject);
-		});
-
-	}).then(start);
-});
-
 asyncTest("Loads globals", function(){
 	GlobalSystem["import"]("jquery").then(function($){
 		ok($.fn.jquery, "jQuery loaded");
@@ -86,7 +55,7 @@ asyncTest("Loads globals", function(){
 
 
 asyncTest("meta", function(){
-	GlobalSystem["import"]("test/meta").then(function(meta){
+	GlobalSystem["import"]("~/test/meta").then(function(meta){
 		equal(meta,"123", "got 123");
 	}).then(start);
 });
@@ -112,14 +81,14 @@ asyncTest("jquery-ui", function(){
 
 asyncTest("import self", function(){
 	GlobalSystem.globalBrowser = {
-		"system-npm": "system-npm"
+		"steal-npm": "steal-npm"
 	};
 	Promise.all([
-		GlobalSystem["import"]("system-npm"),
-		GlobalSystem["import"]("system-npm/test/meta")
+		GlobalSystem["import"]("steal-npm"),
+		GlobalSystem["import"]("steal-npm/test/meta")
 	]).then(function(mods){
 		equal(mods[0], "example-main", "example-main");
-		equal(mods[1], "123", "system-npm/test/meta");
+		equal(mods[1], "123", "steal-npm/test/meta");
 	}).then(start);
 });
 
@@ -187,10 +156,6 @@ asyncTest("github ranges as requested versions are matched", function(){
 	makeIframe("git_ranges/dev.html");
 });
 
-asyncTest("support an alternate name for npm modules", function(){
-	makeIframe("alt_name/dev.html");
-});
-
 asyncTest("works with packages that have multiple versions of the same dependency", function(){
 	makeIframe("mult_dep/dev.html");
 });
@@ -215,16 +180,16 @@ asyncTest("Converting name of git versions works", function(){
 	makeIframe("git_config/dev.html");
 });
 
-asyncTest("local mappings are applied in normalize", function(){
-	makeIframe("map_same/dev.html");
-});
-
 asyncTest("contextual maps work", function(){
 	makeIframe("contextual_map/dev.html");
 });
 
 asyncTest("configDependencies can override config with systemConfig export", function(){
 	makeIframe("ext_config/dev.html");
+});
+
+asyncTest("transform the JSON with jsonOptions", function(){
+	makeIframe("json-options/dev.html");
 });
 
 QUnit.module("npmDependencies");
@@ -271,19 +236,6 @@ asyncTest("peerDependencies are matched against parent that has a matching versi
 
 asyncTest("Able to load dependencies using /index convention", function(){
 	makeIframe("folder_index/dev.html");
-});
-
-asyncTest("canjs", function(){
-	Promise.all([
-		GlobalSystem["import"]("can"),
-		GlobalSystem["import"]("can/control/control")
-	]).then(function(mods){
-		var can = mods[0],
-			Control = mods[1];
-		ok(Control.extend, "Control has an extend method");
-		ok(can.Control.extend, "control");
-	}).then(start);
-
 });
 
 asyncTest("load in a webworker", function(){
