@@ -951,6 +951,15 @@ QUnit.test("Works from a dependent package that is progressively loaded", functi
 		])
 		.loader;
 
+	var fetch = loader.fetch;
+	loader.fetch = function(){
+		return Promise.resolve(fetch.apply(this, arguments))
+			.then(null, function(err){
+				assert.ok(false, err.message);
+				return Promise.reject(err);
+			});
+	};
+
 	helpers.init(loader)
 	.then(function(){
 		return loader.normalize("dep/foo.txt", "app@1.0.0#main");
