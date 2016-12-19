@@ -701,6 +701,7 @@ QUnit.test("Configuration with circular references works", function(assert){
 				something: someObject
 			}
 		});
+		assert.ok(true, "no infinite recursion");
 	})
 	.then(done, helpers.fail(assert, done));
 });
