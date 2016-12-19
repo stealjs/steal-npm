@@ -680,6 +680,31 @@ QUnit.test("Config applied before normalization will be reapplied after", functi
 	.then(done, helpers.fail(assert, done));
 });
 
+QUnit.test("Configuration with circular references works", function(assert){
+	var done = assert.async();
+
+	var someObject = {};
+	someObject.foo = someObject;
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0"
+		})
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		loader.config({
+			instantiated: {
+				something: someObject
+			}
+		});
+		assert.ok(true, "no infinite recursion");
+	})
+	.then(done, helpers.fail(assert, done));
+});
 
 QUnit.module("normalizing with main config");
 
