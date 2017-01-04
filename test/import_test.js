@@ -248,6 +248,55 @@ QUnit.test("'resolutions' config is preserved", function(assert){
 	
 });
 
+QUnit.test("'resolutions' config is saved during the build for progressively loaded package.jsons", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "one",
+			main: "main.js",
+			version: "1.0.0",
+			dependencies: {
+				two: "1.0.0"
+			},
+			system: {
+				"npmAlgorithm": "flat"
+			}
+		})
+		.withPackages([
+			{
+				name: "two",
+				main: "main.js",
+				version: "1.0.0",
+				dependencies: {
+					three: "1.0.0"
+				}
+			},
+			{
+				name: "three",
+				version: "1.0.0",
+				main: "main.js"
+			}
+		])
+		.withModule("one@1.0.0#main", "require('two');")
+		.withModule("two@1.0.0#main", "require('three');")
+		.withModule("three@1.0.0#main", "module.exports = 'it worked'")
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		loader.npmContext.resavePackageInfo = true;
+		return loader["import"]("one/main");
+	})
+	.then(function(){
+		var load = loader.getModuleLoad("package.json!npm");
+		var source = load.source;
+
+		assert.ok(/"three": "1.0.0"/.test(source), "it worked");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 QUnit.module("Importing npm modules using 'browser' config");
 
 QUnit.test("Array property value", function(assert){
