@@ -686,6 +686,9 @@ QUnit.test("Configuration with circular references works", function(assert){
 	var someObject = {};
 	someObject.foo = someObject;
 
+	var Typed = function(){this.isTyped = true};
+	var typeInst = new Typed();
+
 	var loader = helpers.clone()
 		.rootPackage({
 			name: "app",
@@ -698,7 +701,8 @@ QUnit.test("Configuration with circular references works", function(assert){
 	.then(function(){
 		loader.config({
 			instantiated: {
-				something: someObject
+				something: someObject,
+				typeInst: typeInst
 			}
 		});
 		assert.ok(true, "no infinite recursion");
