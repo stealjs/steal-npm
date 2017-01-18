@@ -551,8 +551,52 @@ QUnit.test("'resolutions' config is saved during the build for progressively loa
 		assert.ok(/"three": "1.0.0"/.test(source), "it worked");
 	})
 	.then(done, helpers.fail(assert, done));
-
 });
+
+QUnit.test("'map' config is preserved", function(assert){
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			dependencies: {
+				"dep": "1.0.0"
+			}
+		})
+		.withPackages([{
+			name: "dep",
+			main: "main.js",
+			version: "1.0.0"
+		}])
+		.loader;
+
+	loader.npmContext = {
+		pkgInfo: [
+			{name:"app",main:"main.js",version:"1.0.0", fileUrl: "package.json",
+			steal: {
+				map: {
+					"dep/main": "dep/other"
+				}
+			}}
+		]
+	};
+	loader.npmContext.pkgInfo["app@1.0.0"] = true;
+
+	helpers.init(loader)
+	.then(function(){
+		//return loader.normalize("dep", "app@1.0.0#main");
+	})
+	.then(function(){
+		let pkg = utils.filter(loader.npmContext.pkgInfo, function(pkg){
+			return pkg.name === "app" && pkg.version === "1.0.0";
+		})[0];
+		assert.equal(pkg.steal.map["dep/main"], "dep/other");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
 
 QUnit.module("Importing npm modules using 'browser' config");
 
