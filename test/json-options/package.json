@@ -10,7 +10,7 @@
 		"transform": []
 	},
 	"steal": {
-		"ignoreBrowser": true
+		"someConfig": true
 	},
 	"foo": "bar"
 }
