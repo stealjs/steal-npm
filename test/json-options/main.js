@@ -3,7 +3,6 @@ var dep1 = require('dep1');
 
 if(window.QUnit) {
 	var myJson = require('foo.json');
-	debugger;
 	QUnit.equal(typeof myJson, "object", "foo.json loaded and parsed");
 
 	QUnit.equal(myJson.foo, "bar");
