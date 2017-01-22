@@ -23,7 +23,6 @@
 		},
 		jsonOptions: {
 			transform: function (load, json) {
-				debugger;
 				if (json.name === 'npm-app') {
 					delete json.foo;
 					delete json.steal.someConfig;
