@@ -22,14 +22,15 @@
 			"css": "../../node_modules/steal/ext/css.js"
 		},
 		jsonOptions: {
-			transform: function(load, json) {
-				if(json.fileUrl === "./package.json" && json.name === 'npm-app') {
+			transform: function (load, json) {
+				if (json.name === 'npm-app') {
 					delete json.foo;
-				}
-				for (var prop in json) {
-					if(prop[0] === '_') {
-						delete json[prop];
-					}
+					delete json.steal.someConfig;
+				} else if (json.name == 'dep1') {
+					delete json._npmVersion;
+					delete json.steal.someConfig;
+				}else if(json.bar){
+                    json.bar = "bar";
 				}
 
 				return json;
