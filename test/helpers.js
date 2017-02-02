@@ -6,6 +6,8 @@ function Runner(System){
 	this.BaseSystem = System;
 	this.deps = [];
 	this.sources = {};
+	this.fetchAllowed = {};
+	this.fetchAll = false;
 }
 
 Runner.prototype.clone = function(){
@@ -63,7 +65,11 @@ Runner.prototype.clone = function(){
 			var source = runner.sources[load.name];
 			return Promise.resolve(source);
 		}
+		if(runner.fetchAll || runner.fetchAllowed[load.name]) {
+			return fetch.apply(this, arguments);
+		}
 		var error = new Error("Unable to find: " + load.name);
+		error.statusCode = 404;
 		return Promise.reject(error);
 	};
 
@@ -151,7 +157,7 @@ Runner.prototype.withConfig = function(cfg){
 
 Runner.prototype.npmVersion = function(version){
 	if(arguments.length === 0) {
-		return this._version; 
+		return this._version;
 	}
 	this._version = version;
 	return this;
@@ -168,6 +174,15 @@ Runner.prototype._addVersion = function(){
 		system.npmAlgorithm = this.algorithm = 'flat';
 		this.npmVersion(3);
 	}
+};
+
+Runner.prototype.allowFetch = function(val){
+	if(val === true) {
+		this.fetchAll = true;
+	} else {
+		this.fetchAllowed[val] = true;
+	}
+	return this;
 };
 
 Runner.prototype.isFlat = function(){
