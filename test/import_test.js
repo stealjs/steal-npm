@@ -825,3 +825,44 @@ QUnit.test("Builtins are ignored with builtins: false", function(assert){
 	})
 	.then(done, helpers.fail(assert, done));
 });
+
+QUnit.only("meta config should apply for progressively load modules", function(assert) {
+	var done = assert.async();
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js",
+			dependencies: {
+				dep: "1.0.0"
+			},
+			system: {
+				meta: {
+					dep: {
+						format: "global",
+						deps: [ "dep/global" ]
+					}
+				}
+			}
+		})
+		.withPackages([
+			{
+				name: "dep",
+				version: "1.0.0",
+				main: "main.js",
+			}
+		])
+		.withModule("dep@1.0.0#global", "window.$$$ = {};")
+		.withModule("dep@1.0.0#main", "var foo = $$$;")
+		.loader;
+
+	helpers.init(loader)
+	.then(function() {
+		return loader["import"]("dep");
+	})
+	.then(function(src) {
+		assert.ok(src, "works");
+	})
+	.then(done, helpers.fail(assert, done));
+});
