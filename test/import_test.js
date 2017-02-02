@@ -56,7 +56,7 @@ QUnit.test("Allows a relative main", function(assert){
 		})
 		.withModule("app@1.0.0#relative", "module.exports = 'worked'")
 		.loader;
-	
+
 	loader["import"]("package.json!npm")
 	.then(function(){
 		return loader["import"](loader.main);
@@ -756,6 +756,31 @@ QUnit.test("Doesn't retry the forward slash convention in production", function(
 	})
 	.then(null, function(err){
 		assert.ok(err, "Got an error because we don't do retries in Prod");
+	})
+	.then(done, helpers.fail(assert, done));
+});
+
+QUnit.test("Doesn't retry fetch fails for non-404s", function(assert){
+	var done = assert.async();
+
+	var plugSource = "exports.fetch = function(){return Promise.reject('It failed')}";
+
+	var loader = helpers.clone()
+		.rootPackage({
+			name: "app",
+			version: "1.0.0",
+			main: "main.js"
+		})
+		.withModule("some-plug", plugSource)
+		.allowFetch("app@1.0.0#foo!some-plug")
+		.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		return loader["import"]("app/foo!some-plug");
+	})
+	.then(null, function(err){
+		QUnit.ok(/It failed/.test(err), "Failed for the right reason");
 	})
 	.then(done, helpers.fail(assert, done));
 });
