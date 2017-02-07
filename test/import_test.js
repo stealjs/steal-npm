@@ -825,3 +825,46 @@ QUnit.test("Builtins are ignored with builtins: false", function(assert){
 	})
 	.then(done, helpers.fail(assert, done));
 });
+
+QUnit.test("importing a module using the 'globals' option", function(assert) {
+	var done = assert.async();
+
+	var runner = helpers.clone()
+		.rootPackage({
+			name: "app",
+			main: "main.js",
+			version: "1.0.0",
+			dependencies: {
+				"dep": "1.0.0"
+			},
+			system: {
+				meta: {
+					"app/main": {
+						format: "global",
+						globals: {
+							"$$$": "dep"
+						}
+					}
+				}
+			}
+		})
+		.withPackages([
+			{
+				name: "dep",
+				version: "1.0.0",
+				main: "main.js"
+			}
+		])
+		.withModule("dep@1.0.0#main", "module.exports = {};")
+		.withModule("app@1.0.0#main", "var foo = $$$;");
+
+	var loader = runner.loader;
+
+	loader["import"]("app")
+		.then(function(app) {
+			assert.ok(app);
+		})
+		.then(done, function(err) {
+			assert.ok(!err, err.stack || err);
+		});
+});
