@@ -18,6 +18,12 @@ Runner.prototype.clone = function(){
 		__useDefault: true,
 		"default": loader
 	}));
+	loader.set("@steal", loader.newModule({
+		__useDefault: true,
+		"default": steal
+	}));
+
+	loader.paths["live-reload"] = "node_modules/steal/ext/live-reload.js";
 
 	var allow = {};
 	utils.forEach([
@@ -30,7 +36,8 @@ Runner.prototype.clone = function(){
 		"npm-extension",
 		"npm-utils",
 		"semver",
-		"@loader"
+		"@loader",
+		"@steal"
 	], function(name){
 		allow[name] = true;
 	});
@@ -76,6 +83,12 @@ Runner.prototype.clone = function(){
 	var normalize = loader.normalize;
 	loader.normalize = function(name){
 		if(this._helperInited) {
+			return normalize.apply(this, arguments);
+		}
+
+		var steal = runner.root.steal || {};
+		var configDeps = steal.configDependencies || [];
+		if(configDeps.indexOf(name) !== -1) {
 			return normalize.apply(this, arguments);
 		}
 
