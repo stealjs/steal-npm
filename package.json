@@ -1,6 +1,6 @@
 {
   "name": "steal-npm",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "npm plugin for StealJS",
   "main": "test/example-main.js",
   "directories": {
