@@ -43,3 +43,35 @@ QUnit.test("System.main contains the package name with directories.lib",
 	})
 	.then(done, helpers.fail(assert, done));
 });
+
+QUnit.test("Configuration is reapplied after a live-reload", function(assert){
+	var done = assert.async();
+
+	var root = {
+		name: "app",
+		version: "1.0.0",
+		main: "main.js",
+		steal: {
+			configDependencies: ["live-reload"],
+			foo: "baz"
+		}
+	};
+
+	var runner = helpers.clone()
+		.rootPackage(root)
+		.allowFetch("live-reload");
+
+	var loader = runner.loader;
+
+	helpers.init(loader)
+	.then(function(){
+		root.steal.foo = "bar";
+
+		var liveReload = loader.get("live-reload").default;
+		return liveReload("package.json!npm");
+	})
+	.then(function(){
+		assert.equal(loader.foo, "bar", "config applied after a live-reload");
+	})
+	.then(done, helpers.fail(assert, done));
+});
