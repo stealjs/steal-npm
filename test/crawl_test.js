@@ -55,7 +55,15 @@ QUnit.test("loads a package.json", function(assert){
 });
 
 QUnit.test("Fetching while fileUrl is currently loading (first fails - error)", function(assert){
-	var done = assert.async();
+	var reset = helpers.hookFetch({
+		"./node_modules/app/package.json": {
+			name: "app",
+			version: "1.0.0",
+			main: "main.js"
+		}
+	});
+
+	var done = helpers.done(assert.async(), reset);
 
 	var pkgOne = {
 		name: "app",
@@ -75,10 +83,16 @@ QUnit.test("Fetching while fileUrl is currently loading (first fails - error)", 
 	taskOne.load();
 
 	var taskTwo = new FetchTask(context, pkgTwo);
+
+	taskTwo.fetch = function() {
+		assert.ok(false, "Fetch should not be called, fileUrl is currently loading");
+	};
+
 	taskTwo.load()
 	.then(function(){
 		assert.ok(taskTwo.failed, "It failed");
 		assert.ok(taskTwo.error, "Got an error");
+		assert.ok(/Incompatible package version/.test(taskTwo.error));
 	})
 	.then(done, helpers.fail(assert, done));
 });
