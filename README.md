@@ -2,6 +2,11 @@
 
 [![Build Status](https://travis-ci.org/stealjs/steal-npm.svg?branch=master)](https://travis-ci.org/stealjs/steal-npm)
 
+# DEPRECATED
+
+The npm extension was merged into StealJS core and this repository will no longer be maintained.
+
+--
 This is a plugin for [StealJS](http://stealjs.com/) that makes it easy to work with [npm](https://www.npmjs.com/).
 
 The idea is to reduce the amount of manual configuring needed when using StealJS
