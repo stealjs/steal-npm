@@ -40,7 +40,7 @@
     "qunit": "~0.9.1",
     "qunitjs": "~1.22.0",
     "steal": "^1.2.1",
-    "steal-conditional": "^0.3.0",
+    "steal-conditional": "^0.3.3",
     "steal-qunit": "^1.0.0",
     "testee": "^0.3.0"
   },
