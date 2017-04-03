@@ -39,7 +39,7 @@
     "lodash": "~4.17.2",
     "qunit": "~0.9.1",
     "qunitjs": "~1.22.0",
-    "steal": "^1.2.1",
+    "steal": "^1.4.0",
     "steal-conditional": "^0.3.0",
     "steal-qunit": "^1.0.0",
     "testee": "^0.3.0"
