@@ -38,7 +38,7 @@
     "live-reload-testing": "~5.1.0",
     "lodash": "~4.17.2",
     "qunit": "~0.9.1",
-    "qunitjs": "~1.22.0",
+    "qunitjs": "~2.4.1",
     "steal": "^1.2.1",
     "steal-conditional": "^0.3.0",
     "steal-qunit": "^1.0.0",
