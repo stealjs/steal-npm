@@ -1,12 +1,12 @@
 language: node_js
 node_js:
-    - 4
-    - 6
-    - node
-before_install:
-  - "export DISPLAY=:99.0"
-  - "sh -e /etc/init.d/xvfb start"
+  - 4
+  - 6
+  - node
 script: npm test
 sudo: false
 addons:
   firefox: latest
+dist: xenial
+services:
+  - xvfb
