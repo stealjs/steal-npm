@@ -37,7 +37,7 @@
     "jquery-ui": "1.10.5",
     "live-reload-testing": "~5.1.0",
     "lodash": "~4.17.2",
-    "qunit": "~0.9.1",
+    "qunit": "~2.9.3",
     "qunitjs": "~1.22.0",
     "steal": "^1.2.1",
     "steal-conditional": "^0.3.0",
